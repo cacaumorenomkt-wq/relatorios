@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Marketing</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous"></script>
+<style>
+:root{
+  --acc:#7C3AED;--acc-l:#EDE9FE;--acc-d:#6D28D9;--bg:#F5F3FF;
+  --hdr:#1E1B4B;--card:#fff;--txt:#111827;--txt2:#6B7280;
+  --pos:#059669;--neg:#DC2626;--brdr:#E5E7EB;--r:12px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05);
+  --sh-lg:0 4px 24px rgba(0,0,0,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);line-height:1.5;font-size:14px}
+.wrap{max-width:1320px;margin:0 auto;padding:20px 16px}
+
+/* ─ HEADER ─ */
+.hdr{background:var(--hdr);color:#fff;padding:18px 28px;border-radius:var(--r);margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:var(--sh-lg)}
+.hdr-logo{width:52px;height:52px;border-radius:8px;background:rgba(255,255,255,.15);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;border:1px solid rgba(255,255,255,.2)}
+.hdr-logo img{width:100%;height:100%;object-fit:contain;display:none}
+.hdr-info{flex:1;min-width:0}
+.hdr-info .cli{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.hdr-info .per{font-size:12px;opacity:.65;margin-top:2px}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-shrink:0}
+.hdr-btn{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:.2s;white-space:nowrap}
+.hdr-btn:hover{background:rgba(255,255,255,.28)}
+.hdr-btn.acc{background:var(--acc);border-color:var(--acc-d)}
+.hdr-btn.acc:hover{background:var(--acc-d)}
+.hdr-btn.green{background:#059669;border-color:#047857}
+.hdr-btn.green:hover{background:#047857}
+
+/* ─ PERIOD BAR ─ */
+.period-bar{background:var(--card);border-radius:var(--r);padding:14px 20px;margin-bottom:14px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.period-bar label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt2)}
+.period-bar select{padding:7px 12px;border:1.5px solid var(--brdr);border-radius:8px;font-size:13px;font-weight:600;outline:none;background:#fff;cursor:pointer;color:var(--txt);transition:.2s}
+.period-bar select:focus{border-color:var(--acc)}
+.period-bar input[type=date]{padding:7px 10px;border:1.5px solid var(--brdr);border-radius:8px;font-size:13px;outline:none;color:var(--txt);cursor:pointer;transition:.2s}
+.period-bar input[type=date]:focus{border-color:var(--acc)}
+.period-sep{font-size:13px;color:var(--txt2);font-weight:500}
+.period-bar .pbtn{padding:7px 16px;border:none;border-radius:8px;background:var(--acc);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.period-bar .pbtn:hover{background:var(--acc-d)}
+.period-bar .pbtn.ghost{background:transparent;color:var(--acc);border:1.5px solid var(--acc)}
+.period-bar .pbtn.ghost:hover{background:var(--acc-l)}
+.period-quick{display:flex;gap:6px;flex-wrap:wrap}
+.pq-btn{padding:5px 12px;border:1.5px solid var(--brdr);border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:#fff;color:var(--txt2);transition:.15s;white-space:nowrap}
+.pq-btn:hover,.pq-btn.act{border-color:var(--acc);color:var(--acc);background:var(--acc-l)}
+.period-info{margin-left:auto;font-size:12px;color:var(--txt2)}
+.period-info strong{color:var(--acc);font-weight:700}
+.no-data{background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:14px 18px;margin-bottom:14px;font-size:13px;color:#92400E;display:flex;align-items:center;gap:10px}
+.no-data button{background:#92400E;color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;margin-left:auto}
+
+/* ─ OVERLAYS ─ */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.ov.open{display:flex}
+
+/* ─ SETTINGS PANEL ─ */
+.sp{background:#fff;border-radius:16px;padding:28px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.sp h2{font-size:17px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.sf{margin-bottom:16px}
+.sf label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--txt2);margin-bottom:7px}
+.sf input[type=text]{width:100%;padding:9px 13px;border:1.5px solid var(--brdr);border-radius:8px;font-size:13px;outline:none;transition:.2s}
+.sf input[type=text]:focus{border-color:var(--acc)}
+.crow{display:flex;align-items:center;gap:10px}
+.crow input[type=color]{width:42px;height:42px;border:none;border-radius:8px;cursor:pointer;padding:2px}
+.crow input[type=text]{width:120px;font-family:monospace;font-size:13px}
+.presets{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.preset{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.15s}
+.preset:hover{transform:scale(1.15)}
+.preset.act{border-color:#111;transform:scale(1.1)}
+.logo-area{border:2px dashed var(--brdr);border-radius:8px;padding:14px;text-align:center;cursor:pointer;color:var(--txt2);font-size:12px;transition:.2s}
+.logo-area:hover{border-color:var(--acc);color:var(--acc)}
+#logoPreview{max-height:50px;max-width:150px;margin:8px auto 0;display:none}
+.sact{display:flex;gap:8px;justify-content:flex-end;margin-top:22px}
+.btn-c{padding:9px 18px;border:1.5px solid var(--brdr);border-radius:8px;background:#fff;color:var(--txt2);font-size:13px;font-weight:600;cursor:pointer}
+.btn-a{padding:9px 22px;border:none;border-radius:8px;background:var(--acc);color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-a:hover{background:var(--acc-d)}
+
+/* ─ PERIOD EDITOR PANEL ─ */
+.ep{background:#fff;border-radius:16px;padding:28px;width:680px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.ep h2{font-size:17px;font-weight:700;margin-bottom:6px}
+.ep .ep-sub{font-size:12px;color:var(--txt2);margin-bottom:20px}
+.ep-tabs{display:flex;gap:4px;background:#F3F4F6;border-radius:8px;padding:4px;margin-bottom:20px}
+.ep-tab{flex:1;padding:7px 10px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:var(--txt2);transition:.15s}
+.ep-tab.act{background:#fff;color:var(--acc);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.ep-section{display:none}
+.ep-section.act{display:block}
+.ep-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:500px){.ep-grid{grid-template-columns:1fr}}
+.ep-field{display:flex;flex-direction:column;gap:5px}
+.ep-field label{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.4px}
+.ep-field input{padding:8px 11px;border:1.5px solid var(--brdr);border-radius:7px;font-size:13px;outline:none;transition:.2s}
+.ep-field input:focus{border-color:var(--acc)}
+.ep-field input.wide{grid-column:1/-1}
+.ep-notice{background:var(--acc-l);border-radius:7px;padding:10px 14px;font-size:12px;color:var(--acc-d);margin-bottom:14px}
+.ep-camp-block{background:#F9FAFB;border:1px solid var(--brdr);border-radius:8px;padding:14px;margin-bottom:10px}
+.ep-camp-block h4{font-size:12px;font-weight:700;color:var(--txt);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.ep-saved-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.saved-period{background:#F9FAFB;border:1px solid var(--brdr);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:.15s}
+.saved-period:hover{border-color:var(--acc);background:var(--acc-l)}
+.saved-period.act-p{border-color:var(--acc);background:var(--acc-l)}
+.saved-period .sp-dates{font-size:11px;color:var(--txt2)}
+.saved-period .sp-name{font-size:13px;font-weight:600;color:var(--txt)}
+.saved-period .sp-badge{font-size:10px;background:#E5E7EB;color:var(--txt2);padding:2px 6px;border-radius:4px;margin-left:auto}
+.saved-period .sp-del{font-size:11px;color:var(--neg);cursor:pointer;padding:3px 6px;border-radius:4px;transition:.15s;margin-left:4px}
+.saved-period .sp-del:hover{background:#FEE2E2}
+.ep-empty{text-align:center;padding:32px;color:var(--txt2);font-size:13px}
+
+/* ─ TABS ─ */
+.tabs-nav{display:flex;gap:4px;background:var(--card);border-radius:var(--r);padding:6px;margin-bottom:16px;box-shadow:var(--sh);overflow-x:auto}
+.tab-btn{flex:1;min-width:110px;padding:9px 18px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:transparent;color:var(--txt2);transition:.2s;white-space:nowrap}
+.tab-btn.act{background:var(--acc);color:#fff;font-weight:700}
+.tab-btn:hover:not(.act){background:var(--acc-l);color:var(--acc)}
+.tab{display:none}.tab.act{display:block}
+
+/* ─ KPI GRID ─ */
+.kgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+@media(max-width:1080px){.kgrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){.kgrid{grid-template-columns:repeat(2,1fr)}}
+.kcard{background:var(--card);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh);border-top:3px solid var(--acc);transition:.2s}
+.kcard:hover{transform:translateY(-2px);box-shadow:var(--sh-lg)}
+.kcard.ig{border-top-color:#E1306C}
+.kcard.fb{border-top-color:#1877F2}
+.klbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--txt2);margin-bottom:4px}
+.kval{font-size:24px;font-weight:700;color:var(--txt);line-height:1.1}
+.ksub{font-size:11px;color:var(--txt2);margin-top:3px}
+.delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:2px 7px;border-radius:10px;margin-top:5px}
+.delta.up{background:#D1FAE5;color:var(--pos)}
+.delta.dn{background:#FEE2E2;color:var(--neg)}
+.delta.nt{background:#F3F4F6;color:var(--txt2)}
+
+/* ─ CARDS / GRIDS ─ */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:768px){.cgrid{grid-column:1fr}}
+.card{background:var(--card);border-radius:var(--r);padding:20px 22px;box-shadow:var(--sh)}
+.card.full{grid-column:1/-1}
+.card h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--txt2);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--brdr)}
+.chrow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:768px){.chrow{grid-template-columns:1fr}}
+
+/* ─ METRICS ─ */
+.mlist{display:flex;flex-direction:column}
+.mrow{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:7px 0;border-bottom:1px solid #F3F4F6}
+.mrow:last-child{border:none}
+.mlbl{color:var(--txt2)}
+.mval{font-weight:700;color:var(--txt)}
+.mval.pos{color:var(--pos)}.mval.neg{color:var(--neg)}
+.mval.empty{color:#D1D5DB;font-style:italic;font-weight:400}
+
+/* ─ FILTER BAR ─ */
+.fbar{background:var(--card);border-radius:var(--r);padding:16px 20px;margin-bottom:14px;box-shadow:var(--sh);border-left:4px solid var(--acc)}
+.fbar-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:6px}
+.ftitle{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--acc)}
+.fbtns{display:flex;gap:5px}
+.fbtn{padding:4px 11px;border:1px solid var(--brdr);border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;background:#fff;color:var(--txt2);transition:.15s}
+.fbtn:hover{border-color:var(--acc);color:var(--acc)}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:2px solid transparent;background:#F3F4F6;color:#6B7280;transition:.2s;display:flex;align-items:center;gap:5px}
+.chip-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.chip.sel{background:var(--acc-l);color:var(--acc-d);border-color:var(--acc)}
+.fsumm{background:var(--acc-l);border-radius:8px;padding:11px 16px;margin-bottom:14px;display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+.fsi{display:flex;flex-direction:column;gap:1px}
+.fsi .fsl{font-size:9px;color:var(--acc-d);text-transform:uppercase;letter-spacing:.4px;opacity:.8}
+.fsi .fsv{font-size:15px;font-weight:700;color:var(--acc-d)}
+.fcnt{margin-left:auto;background:var(--acc);color:#fff;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px}
+
+/* ─ TABLE ─ */
+.twrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:var(--acc-l);color:var(--acc-d);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:9px 12px;text-align:left;white-space:nowrap}
+tbody tr:hover{background:#F9FAFB}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--brdr);vertical-align:middle}
+tfoot td{padding:9px 12px;font-weight:700;background:var(--acc-l);color:var(--acc-d);border-top:2px solid var(--acc)}
+.cdot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+
+/* ─ TOP POSTS ─ */
+.posts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:600px){.posts-grid{grid-template-columns:1fr}}
+.post-card{border:1px solid var(--brdr);border-radius:10px;overflow:hidden;transition:.2s}
+.post-card:hover{box-shadow:var(--sh-lg);transform:translateY(-2px)}
+.post-img{height:120px;background:var(--acc-l);display:flex;align-items:center;justify-content:center;font-size:34px}
+.post-img img{width:100%;height:100%;object-fit:cover}
+.post-body{padding:12px}
+.post-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:var(--acc-l);color:var(--acc-d);margin-bottom:6px}
+.post-cap{font-size:12px;color:var(--txt);margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.post-stats{display:flex;gap:8px;font-size:11px;color:var(--txt2);flex-wrap:wrap}
+.upload-hint{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:var(--txt2);font-size:28px;transition:.2s}
+.upload-hint:hover{color:var(--acc)}
+.post-card:hover .upload-hint{transform:scale(1.1)}
+
+/* ─ META CREATIVES ─ */
+.criativo-card{border:1px solid var(--brdr);border-radius:10px;overflow:hidden;transition:.2s}
+.criativo-card:hover{box-shadow:var(--sh-lg);transform:translateY(-2px)}
+.cri-img{height:140px;background:var(--acc-l);display:flex;align-items:center;justify-content:center;font-size:34px;cursor:pointer;position:relative}
+.cri-img img{width:100%;height:100%;object-fit:cover}
+.cri-body{padding:12px}
+.cri-caption{font-size:12px;color:var(--txt);margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:500}
+.cri-stats{display:flex;flex-direction:column;gap:6px;font-size:10px;color:var(--txt2)}
+.cri-stats span{display:flex;justify-content:space-between;align-items:center}
+.cri-stats strong{color:var(--acc-d);font-weight:600}
+
+/* ─ ANALYSIS ─ */
+.anal-text{width:100%;min-height:110px;border:1.5px solid var(--brdr);border-radius:8px;padding:12px;font-size:13px;color:var(--txt);line-height:1.7;resize:vertical;outline:none;transition:.2s;font-family:inherit}
+.anal-text:focus{border-color:var(--acc)}
+.reco-list{display:flex;flex-direction:column;gap:10px}
+.reco{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;background:var(--acc-l);border-radius:8px}
+.reco-icon{font-size:17px;flex-shrink:0}
+.reco-txt{font-size:13px;color:#374151;line-height:1.6}
+.reco-txt strong{color:var(--acc-d)}
+
+/* ─ PRINT ─ */
+@media print{
+  .no-print,.hdr-btn,.tabs-nav,.fbar,.fsumm,.ov,.hdr-right,.period-bar,.no-data{display:none!important}
+  .tab{display:block!important}
+  .wrap{padding:0}
+  body{background:#fff}
+  .card,.kcard{break-inside:avoid;box-shadow:none;border:1px solid #E5E7EB}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SETTINGS OVERLAY ══ -->
+<div class="ov" id="ovSettings" onclick="if(event.target===this)closeSettings()">
+<div class="sp">
+  <h2>⚙️ Personalizar Dashboard</h2>
+  <div class="sf"><label>Nome do Cliente</label><input type="text" id="siName" value="Banda Universos"></div>
+  <div class="sf">
+    <label>Logo (clique para upload)</label>
+    <div class="logo-area" onclick="document.getElementById('logoFile').click()">📁 PNG, JPG ou SVG</div>
+    <input type="file" id="logoFile" accept="image/*" style="display:none" onchange="handleLogo(this)">
+    <img id="logoPreview" src="" alt="">
+  </div>
+  <div class="sf">
+    <label>Cor Principal</label>
+    <div class="crow">
+      <input type="color" id="cpAcc" value="#7C3AED" oninput="syncCol('Acc')">
+      <input type="text" id="chAcc" value="#7C3AED" placeholder="#7C3AED" oninput="syncHex('Acc')">
+    </div>
+    <div class="presets" id="prAcc">
+      <div class="preset act" style="background:#7C3AED" data-c="#7C3AED" onclick="pickP('Acc',this)"></div>
+      <div class="preset" style="background:#2563EB" data-c="#2563EB" onclick="pickP('Acc',this)"></div>
+      <div class="preset" style="background:#059669" data-c="#059669" onclick="pickP('Acc',this)"></div>
+      <div class="preset" style="background:#DC2626" data-c="#DC2626" onclick="pickP('Acc',this)"></div>
+      <div class="preset" style="background:#D97706" data-c="#D97706" onclick="pickP('Acc',this)"></div>
+      <div class="preset" style="background:#DB2777" data-c="#DB2777" onclick="pickP('Acc',this)"></div>
+      <div class="preset" style="background:#0891B2" data-c="#0891B2" onclick="pickP('Acc',this)"></div>
+      <div class="preset" style="background:#EA580C" data-c="#EA580C" onclick="pickP('Acc',this)"></div>
+    </div>
+  </div>
+  <div class="sf">
+    <label>Cor do Cabeçalho</label>
+    <div class="crow">
+      <input type="color" id="cpHdr" value="#1E1B4B" oninput="syncCol('Hdr')">
+      <input type="text" id="chHdr" value="#1E1B4B" placeholder="#1E1B4B" oninput="syncHex('Hdr')">
+    </div>
+    <div class="presets" id="prHdr">
+      <div class="preset act" style="background:#1E1B4B" data-c="#1E1B4B" onclick="pickP('Hdr',this)"></div>
+      <div class="preset" style="background:#111827" data-c="#111827" onclick="pickP('Hdr',this)"></div>
+      <div class="preset" style="background:#1E3A5F" data-c="#1E3A5F" onclick="pickP('Hdr',this)"></div>
+      <div class="preset" style="background:#14532D" data-c="#14532D" onclick="pickP('Hdr',this)"></div>
+      <div class="preset" style="background:#7F1D1D" data-c="#7F1D1D" onclick="pickP('Hdr',this)"></div>
+      <div class="preset" style="background:#3B0764" data-c="#3B0764" onclick="pickP('Hdr',this)"></div>
+    </div>
+  </div>
+  <div class="sact">
+    <button class="btn-c" onclick="closeSettings()">Cancelar</button>
+    <button class="btn-a" onclick="applySettings()">✓ Aplicar</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ PERIOD EDITOR OVERLAY ══ -->
+<div class="ov" id="ovEditor" onclick="if(event.target===this)closeEditor()">
+<div class="ep">
+  <h2>📅 Gerenciar Períodos</h2>
+  <p class="ep-sub">Adicione os dados de cada relatório mLabs manualmente. Cada período fica salvo no navegador.</p>
+
+  <div class="ep-tabs">
+    <button class="ep-tab act" onclick="switchEpTab('list',this)">📋 Períodos Salvos</button>
+    <button class="ep-tab" onclick="switchEpTab('add',this)">➕ Novo Período</button>
+  </div>
+
+  <!-- Lista de períodos salvos -->
+  <div class="ep-section act" id="ep-list">
+    <div class="ep-saved-list" id="savedList"></div>
+    <div class="ep-empty" id="epEmpty" style="display:none">
+      Nenhum período salvo ainda.<br>Clique em <strong>Novo Período</strong> para adicionar o primeiro.
+    </div>
+  </div>
+
+  <!-- Formulário de novo período -->
+  <div class="ep-section" id="ep-add">
+    <div class="ep-notice">💡 Preencha com os dados do relatório mLabs. Campos com * são obrigatórios.</div>
+
+    <div class="ep-tabs" style="margin-top:0">
+      <button class="ep-tab act" onclick="switchFormTab('periodo',this)">📌 Período</button>
+      <button class="ep-tab" onclick="switchFormTab('meta',this)">🎯 Meta Ads</button>
+      <button class="ep-tab" onclick="switchFormTab('instagram',this)">📸 Instagram</button>
+      <button class="ep-tab" onclick="switchFormTab('facebook',this)">📘 Facebook</button>
+    </div>
+
+    <!-- PERÍODO -->
+    <div class="ep-section act" id="form-periodo">
+      <div class="ep-grid">
+        <div class="ep-field" style="grid-column:1/-1"><label>Nome do Período *</label><input type="text" id="f_nome" placeholder="Ex: Semana 14/04/2026"></div>
+        <div class="ep-field"><label>Data Início *</label><input type="date" id="f_inicio"></div>
+        <div class="ep-field"><label>Data Fim *</label><input type="date" id="f_fim"></div>
+        <div class="ep-field" style="grid-column:1/-1">
+          <label>Análise do Período</label>
+          <textarea id="f_analise" style="width:100%;height:80px;padding:9px;border:1.5px solid var(--brdr);border-radius:7px;font-size:13px;outline:none;resize:vertical;font-family:inherit" placeholder="Análise estratégica..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- META ADS -->
+    <div class="ep-section" id="form-meta">
+      <div class="ep-grid">
+        <div class="ep-field" style="grid-column:1/-1"><label>Gasto Total R$ *</label><input type="number" id="f_meta_gasto" placeholder="Ex: 547.70" step="0.01"></div>
+      </div>
+      <p style="font-size:12px;color:var(--txt2);margin:14px 0 10px;font-weight:600">Campanhas (mínimo 1):</p>
+      <div id="campsList"></div>
+      <button onclick="addCampForm()" style="width:100%;padding:9px;border:1.5px dashed var(--acc);border-radius:8px;background:var(--acc-l);color:var(--acc-d);font-size:13px;font-weight:600;cursor:pointer;transition:.2s">+ Adicionar Campanha</button>
+    </div>
+
+    <!-- INSTAGRAM -->
+    <div class="ep-section" id="form-instagram">
+      <div class="ep-grid">
+        <div class="ep-field"><label>Seguidores Totais *</label><input type="number" id="f_ig_seg" placeholder="321477"></div>
+        <div class="ep-field"><label>Novos Seguidores</label><input type="number" id="f_ig_seg_novos" placeholder="4904"></div>
+        <div class="ep-field"><label>Alcance Orgânico</label><input type="number" id="f_ig_alcance" placeholder="373853"></div>
+        <div class="ep-field"><label>Impressões / Visualiz.</label><input type="number" id="f_ig_impressoes" placeholder="2745669"></div>
+        <div class="ep-field"><label>Taxa de Engajamento %</label><input type="number" id="f_ig_eng" placeholder="18.30" step="0.1"></div>
+        <div class="ep-field"><label>Posts Publicados</label><input type="number" id="f_ig_posts" placeholder="53"></div>
+        <div class="ep-field"><label>Reels Publicados</label><input type="number" id="f_ig_reels" placeholder="12"></div>
+        <div class="ep-field"><label>Stories Publicados</label><input type="number" id="f_ig_stories" placeholder="85"></div>
+        <div class="ep-field"><label>Curtidas</label><input type="number" id="f_ig_curtidas" placeholder="126395"></div>
+        <div class="ep-field"><label>Comentários</label><input type="number" id="f_ig_comentarios" placeholder="1633"></div>
+        <div class="ep-field"><label>Compartilhamentos</label><input type="number" id="f_ig_compartilhamentos" placeholder="9102"></div>
+        <div class="ep-field"><label>Salvamentos</label><input type="number" id="f_ig_salvamentos" placeholder="3450"></div>
+        <div class="ep-field"><label>Views de Reels</label><input type="number" id="f_ig_reels_views" placeholder="2200000"></div>
+        <div class="ep-field"><label>Views de Stories</label><input type="number" id="f_ig_stories_views" placeholder="380000"></div>
+      </div>
+    </div>
+
+    <!-- FACEBOOK -->
+    <div class="ep-section" id="form-facebook">
+      <div class="ep-grid">
+        <div class="ep-field"><label>Seguidores Totais</label><input type="number" id="f_fb_seg" placeholder="0"></div>
+        <div class="ep-field"><label>Novos Seguidores</label><input type="number" id="f_fb_seg_novos" placeholder="0"></div>
+        <div class="ep-field"><label>Alcance Orgânico</label><input type="number" id="f_fb_alcance" placeholder="0"></div>
+        <div class="ep-field"><label>Impressões</label><input type="number" id="f_fb_impressoes" placeholder="0"></div>
+        <div class="ep-field"><label>Posts Publicados</label><input type="number" id="f_fb_posts" placeholder="0"></div>
+        <div class="ep-field"><label>Vídeos Publicados</label><input type="number" id="f_fb_videos" placeholder="0"></div>
+        <div class="ep-field"><label>Reações</label><input type="number" id="f_fb_reacoes" placeholder="0"></div>
+        <div class="ep-field"><label>Comentários</label><input type="number" id="f_fb_comentarios" placeholder="0"></div>
+        <div class="ep-field"><label>Compartilhamentos</label><input type="number" id="f_fb_compartilhamentos" placeholder="0"></div>
+        <div class="ep-field"><label>Cliques em Links</label><input type="number" id="f_fb_cliques" placeholder="0"></div>
+        <div class="ep-field"><label>Views de Vídeo</label><input type="number" id="f_fb_videos_views" placeholder="0"></div>
+        <div class="ep-field"><label>Taxa de Engajamento %</label><input type="number" id="f_fb_eng" placeholder="0" step="0.1"></div>
+      </div>
+    </div>
+
+    <div class="sact" style="margin-top:20px">
+      <button class="btn-c" onclick="resetForm()">🗑 Limpar</button>
+      <button class="btn-a" onclick="savePeriodo()">💾 Salvar Período</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="wrap" id="mainContent">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-logo" id="logoBox" onclick="document.getElementById('logoFile2').click()" title="Trocar logo">
+      🎵<img id="hdrLogoImg" src="" alt="">
+    </div>
+    <input type="file" id="logoFile2" accept="image/*" style="display:none" onchange="handleLogo(this)">
+    <div class="hdr-info">
+      <div class="cli" id="hdrName">Dashboard Marketing</div>
+      <div class="per" id="hdrPer">Nenhum período selecionado</div>
+    </div>
+    <div class="hdr-right no-print">
+      <button class="hdr-btn green" onclick="openEditor()">📅 Períodos</button>
+      <button class="hdr-btn" onclick="openSettings()">⚙️ Personalizar</button>
+      <button class="hdr-btn acc" onclick="exportPDF()">📄 PDF</button>
+    </div>
+  </div>
+
+  <!-- PERIOD BAR -->
+  <div class="period-bar no-print">
+    <label>Exibir:</label>
+    <div class="period-quick" id="quickBtns">
+      <button class="pq-btn" onclick="applyQuick('sem_atual')">Semana Atual</button>
+      <button class="pq-btn" onclick="applyQuick('sem_ant')">Semana Anterior</button>
+      <button class="pq-btn" onclick="applyQuick('15dias')">Últimos 15 dias</button>
+      <button class="pq-btn" onclick="applyQuick('mes_atual')">Mês Atual</button>
+      <button class="pq-btn" onclick="applyQuick('mes_ant')">Mês Anterior</button>
+    </div>
+    <span class="period-sep">|</span>
+    <label>Personalizado:</label>
+    <input type="date" id="dateFrom" onchange="applyCustomRange()">
+    <span class="period-sep">→</span>
+    <input type="date" id="dateTo" onchange="applyCustomRange()">
+    <div class="period-info" id="periodInfo">Selecione um período</div>
+  </div>
+
+  <!-- NO DATA NOTICE -->
+  <div class="no-data" id="noDataBanner" style="display:none">
+    ⚠️ Nenhum dado encontrado para este período. Adicione períodos com os dados do mLabs.
+    <button onclick="openEditor()">+ Adicionar dados</button>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-nav no-print">
+    <button class="tab-btn act" onclick="switchTab('geral',this)">📊 Visão Geral</button>
+    <button class="tab-btn" onclick="switchTab('meta',this)">🎯 Meta Ads</button>
+    <button class="tab-btn" onclick="switchTab('ig',this)">📸 Instagram</button>
+    <button class="tab-btn" onclick="switchTab('fb',this)">📘 Facebook</button>
+    <button class="tab-btn" onclick="switchTab('analise',this)">💡 Análise</button>
+  </div>
+
+  <!-- ══ VISÃO GERAL ══ -->
+  <div class="tab act" id="tab-geral">
+    <div class="kgrid" id="kg-geral"></div>
+    <div class="chrow">
+      <div class="card"><h3>Gasto × Cliques por Campanha</h3><div style="height:220px"><canvas id="chGC"></canvas></div></div>
+      <div class="card"><h3>Alcance por Plataforma</h3><div style="height:220px"><canvas id="chGP"></canvas></div></div>
+    </div>
+    <div class="cgrid">
+      <div class="card"><h3>📸 Instagram — Resumo</h3><div class="mlist" id="igSumm"></div></div>
+      <div class="card"><h3>📘 Facebook — Resumo</h3><div class="mlist" id="fbSumm"></div></div>
+    </div>
+    <div class="card full"><h3>🎯 Meta Ads — Campanhas do Período</h3>
+      <div class="twrap"><table><thead><tr><th>Campanha</th><th>Cliques</th><th>Alcance</th><th>CPC</th><th>CPM</th><th>Gasto</th><th>FB Cl.</th><th>IG Cl.</th></tr></thead><tbody id="geralTb"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- ══ META ADS ══ -->
+  <div class="tab" id="tab-meta">
+    <div class="fbar no-print">
+      <div class="fbar-hdr"><span class="ftitle">🎛️ Filtrar Campanhas</span>
+        <div class="fbtns"><button class="fbtn" onclick="selAll()">Todas</button><button class="fbtn" onclick="selNone()">Nenhuma</button><button class="fbtn" onclick="selInv()">Inverter</button></div>
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="fsumm">
+      <div class="fsi"><span class="fsl">Cliques</span><span class="fsv" id="fsC">—</span></div>
+      <div class="fsi"><span class="fsl">Gasto</span><span class="fsv" id="fsG">—</span></div>
+      <div class="fsi"><span class="fsl">CPC</span><span class="fsv" id="fsCpc">—</span></div>
+      <div class="fsi"><span class="fsl">CPM</span><span class="fsv" id="fsCpm">—</span></div>
+      <div class="fsi"><span class="fsl">Alcance</span><span class="fsv" id="fsA">—</span></div>
+      <div class="fsi"><span class="fsl">Impressões</span><span class="fsv" id="fsI">—</span></div>
+      <span class="fcnt" id="fcnt">—</span>
+    </div>
+    <div class="chrow">
+      <div class="card"><h3>Cliques por Campanha</h3><div style="height:220px"><canvas id="chMC"></canvas></div></div>
+      <div class="card"><h3>Investimento por Campanha</h3><div style="height:220px"><canvas id="chMG"></canvas></div></div>
+    </div>
+    <div class="chrow">
+      <div class="card"><h3>Facebook × Instagram — Cliques</h3><div style="height:220px"><canvas id="chMP"></canvas></div></div>
+      <div class="card"><h3>Alcance por Campanha</h3><div style="height:220px"><canvas id="chMA"></canvas></div></div>
+    </div>
+    <div class="card full"><h3>Tabela Detalhada</h3>
+      <div class="twrap"><table><thead><tr><th>Campanha</th><th>Cliques</th><th>%</th><th>CPC</th><th>Alcance</th><th>Impressões</th><th>CPM</th><th>CTR</th><th>Gasto</th></tr></thead><tbody id="metaTb"></tbody><tfoot id="metaFt"></tfoot></table></div>
+    </div>
+    <div class="cgrid" style="margin-top:14px">
+      <div class="card"><h3>📘 Facebook Ads</h3><div class="mlist" id="fbAdsD"></div></div>
+      <div class="card"><h3>📸 Instagram Ads</h3><div class="mlist" id="igAdsD"></div></div>
+    </div>
+    <div class="card full" style="margin-top:14px"><h3>🎨 Principais Criativos</h3><div class="posts-grid" id="metaCriativos"></div></div>
+  </div>
+
+  <!-- ══ INSTAGRAM ══ -->
+  <div class="tab" id="tab-ig">
+    <div class="kgrid" id="kg-ig"></div>
+    <div class="chrow">
+      <div class="card"><h3>Crescimento de Seguidores</h3><div style="height:200px"><canvas id="chIS"></canvas></div></div>
+      <div class="card"><h3>Composição do Engajamento</h3><div style="height:200px"><canvas id="chIE"></canvas></div></div>
+    </div>
+    <div class="cgrid">
+      <div class="card"><h3>📊 Métricas Orgânicas</h3><div class="mlist" id="igOrg"></div></div>
+      <div class="card"><h3>🎬 Reels & Stories</h3><div class="mlist" id="igRS"></div></div>
+    </div>
+    <div class="card full" style="margin-top:14px"><h3>🏆 Top Posts do Período</h3><div class="posts-grid" id="topPosts"></div></div>
+  </div>
+
+  <!-- ══ FACEBOOK ══ -->
+  <div class="tab" id="tab-fb">
+    <div class="kgrid" id="kg-fb"></div>
+    <div class="chrow">
+      <div class="card"><h3>Evolução (Cliques FB Ads)</h3><div style="height:200px"><canvas id="chFS"></canvas></div></div>
+      <div class="card"><h3>Distribuição Budget FB × IG</h3><div style="height:200px"><canvas id="chFE"></canvas></div></div>
+    </div>
+    <div class="cgrid">
+      <div class="card"><h3>📊 Métricas Orgânicas</h3><div class="mlist" id="fbPage"></div></div>
+      <div class="card"><h3>🎯 Facebook Ads</h3><div class="mlist" id="fbAds"></div></div>
+    </div>
+    <div class="card full" style="margin-top:14px"><h3>🏆 Top Posts do Facebook</h3><div class="posts-grid" id="fbTopPosts"></div></div>
+  </div>
+
+  <!-- ══ ANÁLISE ══ -->
+  <div class="tab" id="tab-analise">
+    <div class="card full" style="margin-bottom:14px"><h3>📈 Evolução por Período</h3><div style="height:240px"><canvas id="chAn"></canvas></div></div>
+    <div class="card full" style="margin-bottom:14px"><h3>📝 Análise do Período</h3><textarea class="anal-text" id="analTxt" placeholder="Análise..."></textarea></div>
+    <div class="card full" style="margin-bottom:14px"><h3>💡 Recomendações</h3><div class="reco-list" id="recoList"></div></div>
+    <div class="card full"><h3>📊 Comparativo com Período Anterior</h3>
+      <div class="twrap"><table><thead><tr><th>Indicador</th><th>Atual</th><th>Anterior</th><th>Variação</th><th>Status</th></tr></thead><tbody id="compTb"></tbody></table></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  STORAGE — períodos ficam no localStorage do navegador
+// ════════════════════════════════════════════════════════════
+const STORE_KEY = 'dashboard_periodos_v1';
+const COLORS_CAMP = ['#7C3AED','#A855F7','#C084FC','#6366F1','#E1306C','#2563EB','#059669','#D97706'];
+
+let periodos = [];       // array de períodos salvos
+let pAtual = null;       // período exibido atualmente
+let selCamps = new Set();
+let charts = {};
+let campCount = 0;
+
+function loadStorage(){ try{ const d=localStorage.getItem(STORE_KEY); return d?JSON.parse(d):[]; }catch(e){ return []; } }
+function saveStorage(){ try{ localStorage.setItem(STORE_KEY,JSON.stringify(periodos)); }catch(e){ console.warn('localStorage unavailable'); } }
+
+// ── FORMATTERS ──
+const fN = n => (n==null||n===0||n==='')? '—' : Number(n).toLocaleString('pt-BR');
+const fR = n => (n==null||n===0||n==='')? '—' : 'R$ '+Number(n).toFixed(2).replace('.',',');
+const fP = n => (n==null||n===0||n==='')? '—' : Number(n).toFixed(1)+'%';
+
+function mkDelta(cur,prev,upGood=true){
+  if(!prev||!cur) return '';
+  const diff=cur-prev, pct=prev?((diff/Math.abs(prev))*100).toFixed(1):0;
+  const up=diff>0, eq=diff===0;
+  const good=eq?true:upGood?up:!up;
+  const cls=eq?'nt':good?'up':'dn';
+  const arrow=eq?'→':up?'↑':'↓';
+  return `<span class="delta ${cls}">${arrow} ${Math.abs(pct)}%</span>`;
+}
+
+function mkChart(id,type,data,opts={}){
+  if(charts[id])charts[id].destroy();
+  const ctx=document.getElementById(id); if(!ctx)return null;
+  return charts[id]=new Chart(ctx,{type,data,options:{responsive:true,maintainAspectRatio:false,...opts}});
+}
+const baseOpts={plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}},grid:{display:false}},y:{ticks:{font:{size:10}},grid:{color:'#F3F4F6'}}}};
+
+// ════════════════════════════════════════════════════════════
+//  IMAGE UPLOAD & COMPRESSION
+// ════════════════════════════════════════════════════════════
+function compressImage(file, cb) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX = 600;
+      let w = img.width, h = img.height;
+      if (w > h && w > MAX) { h = h*MAX/w; w = MAX; }
+      else if (h > MAX) { w = w*MAX/h; h = MAX; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', 0.7));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function uploadPostImg(event, type, periodoId, postIndex) {
+  event.stopPropagation();
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    compressImage(file, (base64) => {
+      const periodo = periodos.find(p => p.id === periodoId);
+      if (!periodo) return;
+
+      if (type === 'ig' && periodo.instagram.ig_top_posts) {
+        periodo.instagram.ig_top_posts[postIndex].img = base64;
+      } else if (type === 'fb' && periodo.facebook.fb_top_posts) {
+        periodo.facebook.fb_top_posts[postIndex].img = base64;
+      } else if (type === 'meta' && periodo.meta_ads.meta_criativos) {
+        periodo.meta_ads.meta_criativos[postIndex].img = base64;
+      }
+
+      saveStorage();
+      const currentTab = document.querySelector('.tab.act');
+      if (currentTab.id === 'tab-ig') renderIG(periodo, periodos[periodos.indexOf(periodo)-1]);
+      else if (currentTab.id === 'tab-fb') renderFB(periodo, periodos[periodos.indexOf(periodo)-1]);
+      else if (currentTab.id === 'tab-meta') renderMeta(periodo, periodos[periodos.indexOf(periodo)-1]);
+    });
+  };
+  input.click();
+}
+
+// ════════════════════════════════════════════════════════════
+//  TABS
+// ════════════════════════════════════════════════════════════
+function switchTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('act'));
+  document.getElementById('tab-'+id).classList.add('act');
+  btn.classList.add('act');
+}
+
+// ════════════════════════════════════════════════════════════
+//  PERIOD SELECTION
+// ════════════════════════════════════════════════════════════
+function dateOf(s){ return new Date(s+'T00:00:00'); }
+function fmtDate(s){ if(!s)return '—'; const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+
+// Seleciona o período mais próximo de um range de datas
+function findBestPeriod(from,to){
+  if(!periodos.length) return null;
+  // Encontra período cujo range tem maior sobreposição com [from,to]
+  let best=null, bestScore=-1;
+  periodos.forEach(p=>{
+    const ps=dateOf(p.inicio), pe=dateOf(p.fim);
+    const qs=dateOf(from), qe=dateOf(to);
+    const overlapStart=Math.max(ps,qs), overlapEnd=Math.min(pe,qe);
+    const overlap=Math.max(0,(overlapEnd-overlapStart)/(1000*86400));
+    if(overlap>bestScore){bestScore=overlap;best=p;}
+  });
+  return best;
+}
+
+// Botões rápidos
+function applyQuick(mode){
+  document.querySelectorAll('.pq-btn').forEach(b=>b.classList.remove('act'));
+  event.target.classList.add('act');
+  const today=new Date();
+  const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  let from,to;
+  if(mode==='sem_atual'){
+    const d=new Date(today); d.setDate(today.getDate()-today.getDay()||7);
+    from=ymd(d); to=ymd(today);
+  } else if(mode==='sem_ant'){
+    const end=new Date(today); end.setDate(today.getDate()-today.getDay()||7); end.setDate(end.getDate()-1);
+    const start=new Date(end); start.setDate(end.getDate()-6);
+    from=ymd(start); to=ymd(end);
+  } else if(mode==='15dias'){
+    const d=new Date(today); d.setDate(today.getDate()-14);
+    from=ymd(d); to=ymd(today);
+  } else if(mode==='mes_atual'){
+    from=ymd(new Date(today.getFullYear(),today.getMonth(),1));
+    to=ymd(today);
+  } else if(mode==='mes_ant'){
+    const m=new Date(today.getFullYear(),today.getMonth()-1,1);
+    from=ymd(m);
+    to=ymd(new Date(today.getFullYear(),today.getMonth(),0));
+  }
+  document.getElementById('dateFrom').value=from;
+  document.getElementById('dateTo').value=to;
+  showPeriod(from,to);
+}
+
+function applyCustomRange(){
+  document.querySelectorAll('.pq-btn').forEach(b=>b.classList.remove('act'));
+  const from=document.getElementById('dateFrom').value;
+  const to=document.getElementById('dateTo').value;
+  if(from&&to) showPeriod(from,to);
+}
+
+function showPeriod(from,to){
+  const p=findBestPeriod(from,to);
+  const prev=p?periodos.find(x=>x.id!==p.id&&dateOf(x.fim)<dateOf(p.inicio)):null;
+  if(!p){
+    document.getElementById('noDataBanner').style.display='flex';
+    document.getElementById('periodInfo').innerHTML='Selecione um período';
+    return;
+  }
+  document.getElementById('noDataBanner').style.display='none';
+  pAtual=p;
+  selCamps=new Set(p.meta_ads.campanhas.map(c=>c.id));
+  document.getElementById('hdrPer').textContent=p.nome+' · '+fmtDate(p.inicio)+' a '+fmtDate(p.fim);
+  document.getElementById('periodInfo').innerHTML=`<strong>${p.nome}</strong> (${fmtDate(p.inicio)} → ${fmtDate(p.fim)})`;
+  renderAll(p,prev);
+}
+
+// ════════════════════════════════════════════════════════════
+//  RENDER ALL
+// ════════════════════════════════════════════════════════════
+function renderAll(p,prev){
+  renderGeral(p,prev);
+  renderMeta(p,prev);
+  renderIG(p,prev);
+  renderFB(p,prev);
+  renderAnalise(p,prev);
+}
+
+function renderGeral(p,prev){
+  const m=p.meta_ads, ig=p.instagram, fb=p.facebook;
+  const pm=prev?prev.meta_ads:null, pig=prev?prev.instagram:null;
+  const totCl=m.campanhas.reduce((a,c)=>a+(+c.cliques||0),0);
+  const totAlc=m.campanhas.reduce((a,c)=>a+(+c.alcance||0),0);
+  const cpc=totCl?(+m.gasto/totCl):0;
+  const ptCl=pm?pm.campanhas.reduce((a,c)=>a+(+c.cliques||0),0):null;
+
+  document.getElementById('kg-geral').innerHTML=`
+    <div class="kcard"><div class="klbl">Cliques Meta Ads</div><div class="kval">${fN(totCl)}</div><div class="ksub">CPC ${fR(cpc)}</div>${mkDelta(totCl,ptCl)}</div>
+    <div class="kcard"><div class="klbl">Investimento</div><div class="kval">${fR(+m.gasto)}</div><div class="ksub">CPM médio ${fR(m.campanhas.reduce((a,c)=>a+(+c.cpm||0),0)/Math.max(m.campanhas.length,1))}</div>${mkDelta(+m.gasto,pm?+pm.gasto:null,false)}</div>
+    <div class="kcard ig"><div class="klbl">Seguidores IG</div><div class="kval">${fN(+ig.seguidores)}</div><div class="ksub">${+ig.seg_novos?'+'+fN(+ig.seg_novos)+' novos':''}</div>${mkDelta(+ig.seg_novos,pig?+pig.seg_novos:null)}</div>
+    <div class="kcard ig"><div class="klbl">Alcance Orgânico IG</div><div class="kval">${fN(+ig.alcance)}</div><div class="ksub">Eng. ${fP(+ig.engajamento_pct)}</div>${mkDelta(+ig.alcance,pig?+pig.alcance:null)}</div>
+    <div class="kcard ig"><div class="klbl">Visualizações IG</div><div class="kval">${fN(+ig.impressoes)}</div><div class="ksub">${ig.posts} publicações</div>${mkDelta(+ig.impressoes,pig?+pig.impressoes:null)}</div>
+    <div class="kcard ig"><div class="klbl">Reels Views</div><div class="kval">${fN(+ig.reels_views)}</div><div class="ksub">${ig.reels} Reels</div>${mkDelta(+ig.reels_views,pig?+pig.reels_views:null)}</div>
+    <div class="kcard ig"><div class="klbl">Curtidas IG</div><div class="kval">${fN(+ig.curtidas)}</div><div class="ksub">Coments: ${fN(+ig.comentarios)}</div>${mkDelta(+ig.curtidas,pig?+pig.curtidas:null)}</div>
+    <div class="kcard"><div class="klbl">Alcance Pago Total</div><div class="kval">${fN(totAlc)}</div><div class="ksub">FB+IG via Ads</div>${mkDelta(totAlc,pm?pm.campanhas.reduce((a,c)=>a+(+c.alcance||0),0):null)}</div>
+  `;
+
+  const cors=m.campanhas.map((c,i)=>c.cor||COLORS_CAMP[i%COLORS_CAMP.length]);
+  const lbs=m.campanhas.map(c=>c.nome.split(' ').slice(0,2).join(' '));
+  mkChart('chGC','bar',{labels:lbs,datasets:[
+    {label:'Gasto R$',data:m.campanhas.map(c=>+c.gasto||0),backgroundColor:cors,borderRadius:5,yAxisID:'y'},
+    {label:'Cliques',data:m.campanhas.map(c=>+c.cliques||0),backgroundColor:cors.map(c=>c+'88'),borderRadius:5,yAxisID:'y1'}
+  ]},{plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{position:'left',ticks:{font:{size:9}},grid:{color:'#F3F4F6'},title:{display:true,text:'Gasto R$',font:{size:9}}},y1:{position:'right',ticks:{font:{size:9}},grid:{drawOnChartArea:false},title:{display:true,text:'Cliques',font:{size:9}}},x:{ticks:{font:{size:10}},grid:{display:false}}}});
+
+  const fbAlc=m.campanhas.reduce((a,c)=>a+(+c.fb_alc||0),0);
+  const igAlc=m.campanhas.reduce((a,c)=>a+(+c.ig_alc||0),0);
+  mkChart('chGP','doughnut',{labels:['IG Pago','FB Pago','IG Orgânico'],datasets:[{data:[igAlc,fbAlc,+ig.alcance||0],backgroundColor:['#E1306C','#1877F2','#F9A8D4'],borderWidth:2}]},{plugins:{legend:{position:'right',labels:{font:{size:10}}}}});
+
+  document.getElementById('igSumm').innerHTML=`
+    <div class="mrow"><span class="mlbl">Seguidores</span><span class="mval">${fN(+ig.seguidores)}</span></div>
+    <div class="mrow"><span class="mlbl">Novos Seguidores</span><span class="mval pos">+${fN(+ig.seg_novos)}</span></div>
+    <div class="mrow"><span class="mlbl">Alcance Orgânico</span><span class="mval">${fN(+ig.alcance)}</span></div>
+    <div class="mrow"><span class="mlbl">Engajamento %</span><span class="mval pos">${fP(+ig.engajamento_pct)}</span></div>
+    <div class="mrow"><span class="mlbl">Curtidas</span><span class="mval">${fN(+ig.curtidas)}</span></div>
+    <div class="mrow"><span class="mlbl">Reels Views</span><span class="mval">${fN(+ig.reels_views)}</span></div>
+  `;
+  document.getElementById('fbSumm').innerHTML=`
+    <div class="mrow"><span class="mlbl">Seguidores</span><span class="mval ${+fb.seguidores?'':'empty'}">${+fb.seguidores?fN(+fb.seguidores):'Preencher via mLabs'}</span></div>
+    <div class="mrow"><span class="mlbl">Alcance Ads</span><span class="mval">${fN(fbAlc)}</span></div>
+    <div class="mrow"><span class="mlbl">Cliques FB Ads</span><span class="mval">${fN(m.campanhas.reduce((a,c)=>a+(+c.fb_cl||0),0))}</span></div>
+    <div class="mrow"><span class="mlbl">Reações</span><span class="mval ${+fb.reacoes?'':'empty'}">${+fb.reacoes?fN(+fb.reacoes):'Preencher'}</span></div>
+  `;
+
+  let rows='';
+  m.campanhas.forEach((c,i)=>{
+    const cor=c.cor||COLORS_CAMP[i%COLORS_CAMP.length];
+    const cpc_c=+c.cliques?(+c.gasto/+c.cliques):0;
+    rows+=`<tr><td><span class="cdot" style="background:${cor}"></span>${c.nome}</td><td>${fN(+c.cliques)}</td><td>${fN(+c.alcance)}</td><td>${fR(cpc_c)}</td><td>${fR(+c.cpm)}</td><td>${fR(+c.gasto)}</td><td>${fN(+c.fb_cl)}</td><td>${fN(+c.ig_cl)}</td></tr>`;
+  });
+  document.getElementById('geralTb').innerHTML=rows;
+}
+
+function buildChips(){
+  const p=pAtual, cont=document.getElementById('chips');
+  cont.innerHTML='';
+  p.meta_ads.campanhas.forEach((c,i)=>{
+    const cor=c.cor||COLORS_CAMP[i%COLORS_CAMP.length];
+    const ch=document.createElement('div');
+    ch.className='chip sel'; ch.id='chip-'+c.id;
+    ch.innerHTML=`<span class="chip-dot" style="background:${cor}"></span>${c.nome}`;
+    ch.onclick=()=>toggleCamp(c.id,ch);
+    cont.appendChild(ch);
+  });
+}
+function toggleCamp(id,chip){if(selCamps.has(id)){if(selCamps.size===1)return;selCamps.delete(id);chip.classList.remove('sel');}else{selCamps.add(id);chip.classList.add('sel');}updateMetaView();}
+function selAll(){pAtual.meta_ads.campanhas.forEach(c=>{selCamps.add(c.id);const ch=document.getElementById('chip-'+c.id);if(ch)ch.classList.add('sel');});updateMetaView();}
+function selNone(){pAtual.meta_ads.campanhas.forEach((c,i)=>{const ch=document.getElementById('chip-'+c.id);if(i===0){selCamps.add(c.id);if(ch)ch.classList.add('sel');}else{selCamps.delete(c.id);if(ch)ch.classList.remove('sel');}});updateMetaView();}
+function selInv(){const ns=new Set();pAtual.meta_ads.campanhas.forEach(c=>{const ch=document.getElementById('chip-'+c.id);if(!selCamps.has(c.id)){ns.add(c.id);if(ch)ch.classList.add('sel');}else{if(ch)ch.classList.remove('sel');}});if(!ns.size){selAll();return;}selCamps=ns;updateMetaView();}
+
+function updateMetaView(){
+  const p=pAtual;
+  const sel=p.meta_ads.campanhas.filter(c=>selCamps.has(c.id));
+  const agg=sel.reduce((a,c)=>({cl:a.cl+(+c.cliques||0),alc:a.alc+(+c.alcance||0),imp:a.imp+(+c.impressoes||0),g:a.g+(+c.gasto||0),fb_cl:a.fb_cl+(+c.fb_cl||0),ig_cl:a.ig_cl+(+c.ig_cl||0),fb_alc:a.fb_alc+(+c.fb_alc||0),ig_alc:a.ig_alc+(+c.ig_alc||0),fb_g:a.fb_g+(+c.fb_g||0),ig_g:a.ig_g+(+c.ig_g||0)}),{cl:0,alc:0,imp:0,g:0,fb_cl:0,ig_cl:0,fb_alc:0,ig_alc:0,fb_g:0,ig_g:0});
+  const cpc=agg.cl?agg.g/agg.cl:0, cpm=agg.imp?(agg.g/agg.imp)*1000:0;
+  document.getElementById('fsC').textContent=fN(agg.cl);
+  document.getElementById('fsG').textContent=fR(agg.g);
+  document.getElementById('fsCpc').textContent=fR(cpc);
+  document.getElementById('fsCpm').textContent=fR(cpm);
+  document.getElementById('fsA').textContent=fN(agg.alc);
+  document.getElementById('fsI').textContent=fN(agg.imp);
+  document.getElementById('fcnt').textContent=sel.length+' de '+p.meta_ads.campanhas.length+' campanhas';
+
+  const labels=sel.map(c=>c.nome.split(' ').slice(0,2).join(' '));
+  const cors=sel.map((c,i)=>c.cor||COLORS_CAMP[i%COLORS_CAMP.length]);
+  const upd=(id,data,ex={})=>{if(!charts[id])return;charts[id].data.labels=labels;Object.assign(charts[id].data.datasets[0],{data,...ex});charts[id].update();};
+  upd('chMC',sel.map(c=>+c.cliques||0),{backgroundColor:cors});
+  upd('chMG',sel.map(c=>+c.gasto||0),{backgroundColor:cors});
+  upd('chMA',sel.map(c=>+c.alcance||0),{backgroundColor:cors});
+  if(charts['chMP']){charts['chMP'].data.labels=labels;charts['chMP'].data.datasets[0].data=sel.map(c=>+c.fb_cl||0);charts['chMP'].data.datasets[1].data=sel.map(c=>+c.ig_cl||0);charts['chMP'].update();}
+
+  const totCl=agg.cl||1;
+  let rows='';
+  sel.forEach((c,i)=>{
+    const cor=c.cor||COLORS_CAMP[i%COLORS_CAMP.length];
+    const pct=((( +c.cliques||0)/totCl)*100).toFixed(1);
+    const cpc_c=(+c.cliques)?(+c.gasto/+c.cliques):0;
+    const ctr=(+c.impressoes)?((+c.cliques/+c.impressoes)*100).toFixed(2)+'%':'—';
+    rows+=`<tr><td><span class="cdot" style="background:${cor}"></span>${c.nome}</td><td>${fN(+c.cliques)}</td><td>${pct}%</td><td>${fR(cpc_c)}</td><td>${fN(+c.alcance)}</td><td>${fN(+c.impressoes)}</td><td>${fR(+c.cpm)}</td><td>${ctr}</td><td>${fR(+c.gasto)}</td></tr>`;
+  });
+  document.getElementById('metaTb').innerHTML=rows;
+  document.getElementById('metaFt').innerHTML=`<tr><td>TOTAL</td><td>${fN(agg.cl)}</td><td>100%</td><td>${fR(cpc)}</td><td>${fN(agg.alc)}</td><td>${fN(agg.imp)}</td><td>${fR(cpm)}</td><td>—</td><td>${fR(agg.g)}</td></tr>`;
+  document.getElementById('fbAdsD').innerHTML=`<div class="mrow"><span class="mlbl">Cliques</span><span class="mval">${fN(agg.fb_cl)}</span></div><div class="mrow"><span class="mlbl">Alcance</span><span class="mval">${fN(agg.fb_alc)}</span></div><div class="mrow"><span class="mlbl">Gasto</span><span class="mval">${fR(agg.fb_g)}</span></div><div class="mrow"><span class="mlbl">CPC FB</span><span class="mval">${agg.fb_cl?fR(agg.fb_g/agg.fb_cl):'—'}</span></div><div class="mrow"><span class="mlbl">% Budget</span><span class="mval">${agg.g?fP(agg.fb_g/agg.g*100):'—'}</span></div>`;
+  document.getElementById('igAdsD').innerHTML=`<div class="mrow"><span class="mlbl">Cliques</span><span class="mval">${fN(agg.ig_cl)}</span></div><div class="mrow"><span class="mlbl">Alcance</span><span class="mval">${fN(agg.ig_alc)}</span></div><div class="mrow"><span class="mlbl">Gasto</span><span class="mval">${fR(agg.ig_g)}</span></div><div class="mrow"><span class="mlbl">CPC IG</span><span class="mval">${agg.ig_cl?fR(agg.ig_g/agg.ig_cl):'—'}</span></div><div class="mrow"><span class="mlbl">% Budget</span><span class="mval">${agg.g?fP(agg.ig_g/agg.g*100):'—'}</span></div>`;
+}
+
+function renderMeta(p,prev){
+  buildChips();
+  const camps=p.meta_ads.campanhas, cors=camps.map((c,i)=>c.cor||COLORS_CAMP[i%COLORS_CAMP.length]);
+  const lbs=camps.map(c=>c.nome.split(' ').slice(0,2).join(' '));
+  mkChart('chMC','bar',{labels:lbs,datasets:[{data:camps.map(c=>+c.cliques||0),backgroundColor:cors,borderRadius:5}]},baseOpts);
+  mkChart('chMG','bar',{labels:lbs,datasets:[{data:camps.map(c=>+c.gasto||0),backgroundColor:cors,borderRadius:5}]},baseOpts);
+  mkChart('chMA','bar',{labels:lbs,datasets:[{data:camps.map(c=>+c.alcance||0),backgroundColor:cors,borderRadius:5}]},baseOpts);
+  mkChart('chMP','bar',{labels:lbs,datasets:[{label:'Facebook',data:camps.map(c=>+c.fb_cl||0),backgroundColor:'#1877F2',borderRadius:4},{label:'Instagram',data:camps.map(c=>+c.ig_cl||0),backgroundColor:'#E1306C',borderRadius:4}]},{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{x:{ticks:{font:{size:10}},grid:{display:false}},y:{ticks:{font:{size:10}},grid:{color:'#F3F4F6'}}}});
+
+  let crhtml='';
+  (p.meta_ads.meta_criativos||[]).forEach((cr,i)=>{
+    crhtml+=`<div class="criativo-card" onclick="uploadPostImg(event, 'meta', '${p.id}', ${i})">
+      <div class="cri-img">
+        ${cr.img?`<img src="${cr.img}" alt="">`:
+        `<div class="upload-hint">📎<br>Adicionar foto</div>`}
+      </div>
+      <div class="cri-body">
+        <div class="cri-caption">${cr.caption||'Sem legenda'}</div>
+        <div class="cri-stats">
+          <span>🖱 Cliques: <strong>${fN(+cr.cl)}</strong></span>
+          <span>CPC: <strong>R$${fR(+cr.cpc)}</strong></span>
+          <span>👁 Alcance: <strong>${fN(+cr.alcance)}</strong></span>
+          <span>📊 Imp: <strong>${fN(+cr.impressoes)}</strong></span>
+          <span>💰 CPM: <strong>R$${fR(+cr.cpm)}</strong></span>
+          <span>🔁 Freq: <strong>${(+cr.frequencia).toFixed(2)}</strong></span>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('metaCriativos').innerHTML=crhtml||'<p style="color:var(--txt2);font-size:13px">Nenhum criativo adicionado.</p>';
+
+  updateMetaView();
+}
+
+function renderIG(p,prev){
+  const ig=p.instagram, pig=prev?prev.instagram:null;
+  const eng=(+ig.curtidas||0)+(+ig.comentarios||0)+(+ig.compartilhamentos||0)+(+ig.salvamentos||0);
+  document.getElementById('kg-ig').innerHTML=`
+    <div class="kcard ig"><div class="klbl">Seguidores</div><div class="kval">${fN(+ig.seguidores)}</div><div class="ksub">+${fN(+ig.seg_novos)} novos</div>${mkDelta(+ig.seg_novos,pig?+pig.seg_novos:null)}</div>
+    <div class="kcard ig"><div class="klbl">Alcance Orgânico</div><div class="kval">${fN(+ig.alcance)}</div><div class="ksub">${fN(+ig.impressoes)} impressões</div>${mkDelta(+ig.alcance,pig?+pig.alcance:null)}</div>
+    <div class="kcard ig"><div class="klbl">Taxa Engajamento</div><div class="kval">${fP(+ig.engajamento_pct)}</div><div class="ksub">${fN(eng)} interações</div>${mkDelta(+ig.engajamento_pct,pig?+pig.engajamento_pct:null,'pct')}</div>
+    <div class="kcard ig"><div class="klbl">Reels Views</div><div class="kval">${fN(+ig.reels_views)}</div><div class="ksub">${ig.reels} Reels</div>${mkDelta(+ig.reels_views,pig?+pig.reels_views:null)}</div>
+    <div class="kcard ig"><div class="klbl">Stories Views</div><div class="kval">${fN(+ig.stories_views)}</div><div class="ksub">${ig.stories} Stories</div>${mkDelta(+ig.stories_views,pig?+pig.stories_views:null)}</div>
+    <div class="kcard ig"><div class="klbl">Curtidas</div><div class="kval">${fN(+ig.curtidas)}</div><div class="ksub">Coments: ${fN(+ig.comentarios)}</div>${mkDelta(+ig.curtidas,pig?+pig.curtidas:null)}</div>
+    <div class="kcard ig"><div class="klbl">Compartilhamentos</div><div class="kval">${fN(+ig.compartilhamentos)}</div><div class="ksub">Salvamentos: ${fN(+ig.salvamentos)}</div></div>
+    <div class="kcard ig"><div class="klbl">Posts Publicados</div><div class="kval">${ig.posts||'—'}</div><div class="ksub">${ig.reels} Reels · ${ig.stories} Stories</div></div>
+  `;
+
+  const todos=periodos.slice().reverse();
+  mkChart('chIS','line',{labels:todos.map(x=>x.nome),datasets:[
+    {label:'Seguidores',data:todos.map(x=>+x.instagram.seguidores||0),borderColor:'#E1306C',backgroundColor:'#FCE7F344',fill:true,tension:.4,borderWidth:2,pointRadius:4,yAxisID:'y'},
+    {label:'Novos',data:todos.map(x=>+x.instagram.seg_novos||0),borderColor:'#F59E0B',backgroundColor:'transparent',tension:.4,borderWidth:2,pointRadius:4,borderDash:[4,3],yAxisID:'y1'}
+  ]},{plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{position:'left',ticks:{font:{size:9}},grid:{color:'#F3F4F6'},title:{display:true,text:'Total',font:{size:9}}},y1:{position:'right',ticks:{font:{size:9}},grid:{drawOnChartArea:false},title:{display:true,text:'Novos',font:{size:9}}},x:{ticks:{font:{size:10}},grid:{display:false}}}});
+
+  mkChart('chIE','doughnut',{labels:['Curtidas','Coments','Compartilh.','Salvamentos'],datasets:[{data:[(+ig.curtidas||0),(+ig.comentarios||0),(+ig.compartilhamentos||0),(+ig.salvamentos||0)],backgroundColor:['#E1306C','#C13584','#833AB4','#405DE6'],borderWidth:2}]},{plugins:{legend:{position:'right',labels:{font:{size:10}}}}});
+
+  document.getElementById('igOrg').innerHTML=`
+    <div class="mrow"><span class="mlbl">Seguidores Totais</span><span class="mval">${fN(+ig.seguidores)}</span></div>
+    <div class="mrow"><span class="mlbl">Novos no Período</span><span class="mval pos">+${fN(+ig.seg_novos)}</span></div>
+    <div class="mrow"><span class="mlbl">Alcance Orgânico</span><span class="mval">${fN(+ig.alcance)}</span></div>
+    <div class="mrow"><span class="mlbl">Visualizações / Impressões</span><span class="mval">${fN(+ig.impressoes)}</span></div>
+    <div class="mrow"><span class="mlbl">Taxa de Engajamento</span><span class="mval pos">${fP(+ig.engajamento_pct)}</span></div>
+    <div class="mrow"><span class="mlbl">Curtidas</span><span class="mval">${fN(+ig.curtidas)}</span></div>
+    <div class="mrow"><span class="mlbl">Comentários</span><span class="mval">${fN(+ig.comentarios)}</span></div>
+    <div class="mrow"><span class="mlbl">Compartilhamentos</span><span class="mval">${fN(+ig.compartilhamentos)}</span></div>
+    <div class="mrow"><span class="mlbl">Salvamentos</span><span class="mval">${fN(+ig.salvamentos)}</span></div>
+  `;
+  document.getElementById('igRS').innerHTML=`
+    <div class="mrow"><span class="mlbl">Reels Publicados</span><span class="mval">${ig.reels||'—'}</span></div>
+    <div class="mrow"><span class="mlbl">Views de Reels</span><span class="mval">${fN(+ig.reels_views)}</span></div>
+    <div class="mrow"><span class="mlbl">Média por Reel</span><span class="mval">${ig.reels?fN(Math.round((+ig.reels_views||0)/ig.reels)):'—'}</span></div>
+    <div class="mrow"><span class="mlbl">Stories Publicados</span><span class="mval">${ig.stories||'—'}</span></div>
+    <div class="mrow"><span class="mlbl">Views de Stories</span><span class="mval">${fN(+ig.stories_views)}</span></div>
+    <div class="mrow"><span class="mlbl">Média por Story</span><span class="mval">${ig.stories?fN(Math.round((+ig.stories_views||0)/ig.stories)):'—'}</span></div>
+  `;
+
+  let html='';
+  (ig.ig_top_posts||ig.top_posts||[]).forEach((post,i)=>{
+    const ep=+post.alcance?((+post.curtidas+(+post.comentarios||0))/(+post.alcance)*100).toFixed(1):0;
+    html+=`<div class="post-card" onclick="uploadPostImg(event, 'ig', '${p.id}', ${i})">
+      <div class="post-img">
+        ${post.img?`<img src="${post.img}" alt="">`:
+        `<div class="upload-hint">📎<br>Adicionar foto</div>`}
+      </div>
+      <div class="post-body">
+        <span class="post-badge">${post.tipo||'Post'}</span>
+        <div class="post-cap">${post.caption||''}</div>
+        <div class="post-stats">
+          <span>👁 ${fN(+post.alcance)}</span>
+          <span>❤️ ${fN(+post.curtidas)}</span>
+          <span>💬 ${fN(+post.comentarios)}</span>
+          <span>🔖 ${fN(+post.salvamentos||0)}</span>
+          <span>🔄 ${fN(+post.compartilhamentos||0)}</span>
+          <span>🔥 ${ep}%</span>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('topPosts').innerHTML=html||'<p style="color:var(--txt2);font-size:13px">Nenhum post top adicionado.</p>';
+}
+
+function renderFB(p,prev){
+  const fb=p.facebook, pfb=prev?prev.facebook:null;
+  const m=p.meta_ads;
+  document.getElementById('kg-fb').innerHTML=`
+    <div class="kcard fb"><div class="klbl">Seguidores (Org.)</div><div class="kval">${+fb.seguidores?fN(+fb.seguidores):'—'}</div><div class="ksub">${+fb.seg_novos?'+'+fN(+fb.seg_novos)+' novos':'Preencher'}</div></div>
+    <div class="kcard fb"><div class="klbl">Alcance Orgânico</div><div class="kval">${+fb.alcance?fN(+fb.alcance):'—'}</div><div class="ksub">${+fb.impressoes?fN(+fb.impressoes)+' impressões':'Preencher'}</div></div>
+    <div class="kcard fb"><div class="klbl">Reações</div><div class="kval">${+fb.reacoes?fN(+fb.reacoes):'—'}</div><div class="ksub">Coments: ${fN(+fb.comentarios)}</div>${mkDelta(+fb.reacoes,pfb?+pfb.reacoes:null)}</div>
+    <div class="kcard fb"><div class="klbl">Compartilhamentos</div><div class="kval">${+fb.compartilhamentos?fN(+fb.compartilhamentos):'—'}</div><div class="ksub">Cliques: ${fN(+fb.cliques_link)}</div></div>
+    <div class="kcard fb"><div class="klbl">Views de Vídeo</div><div class="kval">${+fb.videos_views?fN(+fb.videos_views):'—'}</div><div class="ksub">${fb.videos||0} vídeos</div></div>
+    <div class="kcard fb"><div class="klbl">Engajamento %</div><div class="kval">${+fb.engajamento_pct?fP(+fb.engajamento_pct):'—'}</div><div class="ksub">${fb.posts||0} posts</div></div>
+    <div class="kcard fb"><div class="klbl">Cliques FB Ads</div><div class="kval">${fN(m.campanhas.reduce((a,c)=>a+(+c.fb_cl||0),0))}</div><div class="ksub">Via Meta Ads</div></div>
+    <div class="kcard fb"><div class="klbl">Gasto FB Ads</div><div class="kval">${fR(m.campanhas.reduce((a,c)=>a+(+c.fb_g||0),0))}</div><div class="ksub">${fP(m.campanhas.reduce((a,c)=>a+(+c.fb_g||0),0)/(+m.gasto||1)*100)} do budget</div></div>
+  `;
+
+  const todos=periodos.slice().reverse();
+  mkChart('chFS','line',{labels:todos.map(x=>x.nome),datasets:[{label:'Cliques FB Ads',data:todos.map(x=>x.meta_ads.campanhas.reduce((a,c)=>a+(+c.fb_cl||0),0)),borderColor:'#1877F2',backgroundColor:'#E8F0FE44',fill:true,tension:.4,borderWidth:2,pointRadius:4}]},{plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}},grid:{display:false}},y:{ticks:{font:{size:10}},grid:{color:'#F3F4F6'}}}});
+
+  const fbG=m.campanhas.reduce((a,c)=>a+(+c.fb_g||0),0);
+  const igG=m.campanhas.reduce((a,c)=>a+(+c.ig_g||0),0);
+  mkChart('chFE','doughnut',{labels:['Gasto FB Ads','Gasto IG Ads'],datasets:[{data:[fbG,igG],backgroundColor:['#1877F2','#E1306C'],borderWidth:2}]},{plugins:{legend:{position:'right',labels:{font:{size:10}}}}});
+
+  document.getElementById('fbPage').innerHTML=`
+    <div class="mrow"><span class="mlbl">Seguidores</span><span class="mval ${+fb.seguidores?'':'empty'}">${+fb.seguidores?fN(+fb.seguidores):'⚠️ Preencher'}</span></div>
+    <div class="mrow"><span class="mlbl">Novos Seguidores</span><span class="mval">${+fb.seg_novos?'+'+fN(+fb.seg_novos):'—'}</span></div>
+    <div class="mrow"><span class="mlbl">Alcance Orgânico</span><span class="mval">${+fb.alcance?fN(+fb.alcance):'—'}</span></div>
+    <div class="mrow"><span class="mlbl">Impressões</span><span class="mval">${+fb.impressoes?fN(+fb.impressoes):'—'}</span></div>
+    <div class="mrow"><span class="mlbl">Reações</span><span class="mval">${+fb.reacoes?fN(+fb.reacoes):'—'}</span></div>
+    <div class="mrow"><span class="mlbl">Comentários</span><span class="mval">${+fb.comentarios?fN(+fb.comentarios):'—'}</span></div>
+    <div class="mrow"><span class="mlbl">Compartilhamentos</span><span class="mval">${+fb.compartilhamentos?fN(+fb.compartilhamentos):'—'}</span></div>
+    <small style="color:#92400E;font-size:11px;margin-top:8px;display:block">Dados orgânicos: preencher via mLabs/Facebook Insights</small>
+  `;
+  document.getElementById('fbAds').innerHTML=`
+    <div class="mrow"><span class="mlbl">Cliques (FB Ads)</span><span class="mval">${fN(m.campanhas.reduce((a,c)=>a+(+c.fb_cl||0),0))}</span></div>
+    <div class="mrow"><span class="mlbl">Alcance (FB Ads)</span><span class="mval">${fN(m.campanhas.reduce((a,c)=>a+(+c.fb_alc||0),0))}</span></div>
+    <div class="mrow"><span class="mlbl">Gasto FB Ads</span><span class="mval">${fR(fbG)}</span></div>
+    <div class="mrow"><span class="mlbl">CPC Facebook</span><span class="mval">${m.campanhas.reduce((a,c)=>a+(+c.fb_cl||0),0)?fR(fbG/m.campanhas.reduce((a,c)=>a+(+c.fb_cl||0),0)):'—'}</span></div>
+    <div class="mrow"><span class="mlbl">% do Budget</span><span class="mval">${fP(fbG/(+m.gasto||1)*100)}</span></div>
+  `;
+
+  let fbhtml='';
+  (fb.fb_top_posts||[]).forEach((post,i)=>{
+    fbhtml+=`<div class="post-card" onclick="uploadPostImg(event, 'fb', '${p.id}', ${i})">
+      <div class="post-img">
+        ${post.img?`<img src="${post.img}" alt="">`:
+        `<div class="upload-hint">📎<br>Adicionar foto</div>`}
+      </div>
+      <div class="post-body">
+        <span class="post-badge">${post.tipo||'Post'}</span>
+        <div class="post-cap">${post.caption||''}</div>
+        <div class="post-stats">
+          <span>👁 ${fN(+post.alcance)}</span>
+          <span>🖥 ${fN(+post.visualizacoes)}</span>
+          <span>🖱 ${fN(+post.cliques)}</span>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('fbTopPosts').innerHTML=fbhtml||'<p style="color:var(--txt2);font-size:13px">Nenhum post top adicionado.</p>';
+}
+
+function renderAnalise(p,prev){
+  const todos=periodos.slice().reverse();
+  mkChart('chAn','line',{labels:todos.map(x=>x.nome),datasets:[
+    {label:'Gasto R$',data:todos.map(x=>+x.meta_ads.gasto||0),borderColor:'#7C3AED',backgroundColor:'transparent',borderWidth:2,tension:.4,pointRadius:5,yAxisID:'y'},
+    {label:'Cliques',data:todos.map(x=>x.meta_ads.campanhas.reduce((a,c)=>a+(+c.cliques||0),0)),borderColor:'#6366F1',backgroundColor:'transparent',borderWidth:2,tension:.4,pointRadius:5,borderDash:[4,3],yAxisID:'y1'},
+    {label:'Alcance IG',data:todos.map(x=>+x.instagram.alcance||0),borderColor:'#E1306C',backgroundColor:'transparent',borderWidth:2,tension:.4,pointRadius:5,yAxisID:'y1'},
+    {label:'Seg. Novos',data:todos.map(x=>+x.instagram.seg_novos||0),borderColor:'#F59E0B',backgroundColor:'transparent',borderWidth:2,tension:.4,pointRadius:5,yAxisID:'y2'}
+  ]},{plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{position:'left',title:{display:true,text:'Gasto R$',font:{size:9}},ticks:{font:{size:9}},grid:{color:'#F3F4F6'}},y1:{position:'right',title:{display:true,text:'Alcance/Cliques',font:{size:9}},ticks:{font:{size:9}},grid:{drawOnChartArea:false}},y2:{display:false},x:{ticks:{font:{size:10}},grid:{display:false}}}});
+
+  document.getElementById('analTxt').value=p.analise||'';
+  let rhtml='';
+  (p.recomendacoes||[]).forEach(r=>{rhtml+=`<div class="reco"><span class="reco-icon">${r.icon}</span><div class="reco-txt">${r.txt}</div></div>`;});
+  document.getElementById('recoList').innerHTML=rhtml||'<p style="color:var(--txt2);font-size:13px">Edite o período para adicionar recomendações.</p>';
+
+  if(!prev){document.getElementById('compTb').innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--txt2);padding:20px">Nenhum período anterior para comparar.</td></tr>';return;}
+  const m=p.meta_ads,pm=prev.meta_ads,ig=p.instagram,pig=prev.instagram;
+  const totCl=m.campanhas.reduce((a,c)=>a+(+c.cliques||0),0);
+  const ptCl=pm.campanhas.reduce((a,c)=>a+(+c.cliques||0),0);
+  const rows=[
+    ['Cliques Totais',totCl,ptCl,'num',true],
+    ['Investimento',+m.gasto,+pm.gasto,'R',false],
+    ['CPC Médio',totCl?(+m.gasto/totCl):0,ptCl?(+pm.gasto/ptCl):0,'R',false],
+    ['Alcance Pago',m.campanhas.reduce((a,c)=>a+(+c.alcance||0),0),pm.campanhas.reduce((a,c)=>a+(+c.alcance||0),0),'num',true],
+    ['IG Novos Seg.',+ig.seg_novos,+pig.seg_novos,'num',true],
+    ['IG Alcance',+ig.alcance,+pig.alcance,'num',true],
+    ['IG Engajamento %',+ig.engajamento_pct,+pig.engajamento_pct,'pct',true],
+    ['IG Reels Views',+ig.reels_views,+pig.reels_views,'num',true],
+    ['IG Curtidas',+ig.curtidas,+pig.curtidas,'num',true],
+  ];
+  let html='';
+  rows.forEach(([lbl,cur,prv,type,upGood])=>{
+    if(!cur&&!prv)return;
+    const diff=cur-prv, pct=prv?((diff/Math.abs(prv))*100).toFixed(1):0;
+    const up=diff>0, eq=diff===0;
+    const good=eq?true:upGood?up:!up;
+    const cls=eq?'nt':good?'up':'dn';
+    const arrow=eq?'→':up?'↑':'↓';
+    const fmt=v=>type==='R'?fR(v):type==='pct'?fP(v):fN(v);
+    html+=`<tr><td>${lbl}</td><td><strong>${fmt(cur)}</strong></td><td>${fmt(prv)}</td><td><span class="delta ${cls}">${arrow} ${Math.abs(pct)}%</span></td><td>${eq?'Estável':good?'✅ Melhora':'⚠️ Queda'}</td></tr>`;
+  });
+  document.getElementById('compTb').innerHTML=html;
+}
+
+// ════════════════════════════════════════════════════════════
+//  PERIOD EDITOR
+// ════════════════════════════════════════════════════════════
+function openEditor(){
+  renderSavedList();
+  document.getElementById('ovEditor').classList.add('open');
+}
+function closeEditor(){document.getElementById('ovEditor').classList.remove('open')}
+function switchEpTab(id,btn){
+  document.querySelectorAll('.ep-section[id^="ep-"]').forEach(s=>s.classList.remove('act'));
+  document.querySelectorAll('.ep>.ep-tabs .ep-tab').forEach(b=>b.classList.remove('act'));
+  document.getElementById('ep-'+id).classList.add('act');
+  btn.classList.add('act');
+  if(id==='add')initCampForm();
+}
+function switchFormTab(id,btn){
+  document.querySelectorAll('.ep-section[id^="form-"]').forEach(s=>s.classList.remove('act'));
+  document.querySelectorAll('#ep-add .ep-tabs .ep-tab').forEach(b=>b.classList.remove('act'));
+  document.getElementById('form-'+id).classList.add('act');
+  btn.classList.add('act');
+}
+
+function renderSavedList(){
+  const list=document.getElementById('savedList');
+  const empty=document.getElementById('epEmpty');
+  if(!periodos.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  list.innerHTML=periodos.map((p,i)=>`
+    <div class="saved-period ${pAtual&&pAtual.id===p.id?'act-p':''}" onclick="selectSavedPeriod('${p.id}')">
+      <div>
+        <div class="sp-name">${p.nome}</div>
+        <div class="sp-dates">${fmtDate(p.inicio)} → ${fmtDate(p.fim)}</div>
+      </div>
+      <span class="sp-badge">${p.meta_ads.campanhas.length} camp.</span>
+      <span class="sp-del" onclick="event.stopPropagation();deletePeriodo('${p.id}')" title="Excluir">🗑</span>
+    </div>
+  `).join('');
+}
+
+function selectSavedPeriod(id){
+  const p=periodos.find(x=>x.id===id);
+  if(!p)return;
+  document.getElementById('dateFrom').value=p.inicio;
+  document.getElementById('dateTo').value=p.fim;
+  closeEditor();
+  showPeriod(p.inicio,p.fim);
+}
+
+function deletePeriodo(id){
+  if(!confirm('Excluir este período? Esta ação não pode ser desfeita.'))return;
+  periodos=periodos.filter(p=>p.id!==id);
+  saveStorage();
+  if(pAtual&&pAtual.id===id)pAtual=null;
+  renderSavedList();
+}
+
+// ── CAMPAIGN FORM ──
+function initCampForm(){
+  campCount=0;
+  document.getElementById('campsList').innerHTML='';
+  addCampForm();
+}
+
+function addCampForm(){
+  campCount++;
+  const i=campCount;
+  const cor=COLORS_CAMP[(i-1)%COLORS_CAMP.length];
+  const div=document.createElement('div');
+  div.className='ep-camp-block';
+  div.id='camp-block-'+i;
+  div.innerHTML=`
+    <h4><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${cor};margin-right:6px"></span>Campanha ${i}
+      ${i>1?`<button onclick="removeCamp(${i})" style="margin-left:auto;background:#FEE2E2;color:#DC2626;border:none;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer">Remover</button>`:''}
+    </h4>
+    <div class="ep-grid">
+      <div class="ep-field" style="grid-column:1/-1"><label>Nome da Campanha *</label><input type="text" id="c${i}_nome" placeholder="Ex: Lançamento Momento de Paz"></div>
+      <div class="ep-field"><label>Cliques *</label><input type="number" id="c${i}_cliques" placeholder="1671"></div>
+      <div class="ep-field"><label>Alcance</label><input type="number" id="c${i}_alcance" placeholder="23168"></div>
+      <div class="ep-field"><label>Impressões</label><input type="number" id="c${i}_impressoes" placeholder="39186"></div>
+      <div class="ep-field"><label>CPM R$</label><input type="number" id="c${i}_cpm" placeholder="5.68" step="0.01"></div>
+      <div class="ep-field"><label>Gasto Total R$ *</label><input type="number" id="c${i}_gasto" placeholder="214.44" step="0.01"></div>
+      <div class="ep-field"><label>Cliques Facebook</label><input type="number" id="c${i}_fb_cl" placeholder="1100"></div>
+      <div class="ep-field"><label>Cliques Instagram</label><input type="number" id="c${i}_ig_cl" placeholder="571"></div>
+      <div class="ep-field"><label>Alcance Facebook</label><input type="number" id="c${i}_fb_alc" placeholder="13200"></div>
+      <div class="ep-field"><label>Alcance Instagram</label><input type="number" id="c${i}_ig_alc" placeholder="9968"></div>
+      <div class="ep-field"><label>Gasto Facebook R$</label><input type="number" id="c${i}_fb_g" placeholder="98.20" step="0.01"></div>
+      <div class="ep-field"><label>Gasto Instagram R$</label><input type="number" id="c${i}_ig_g" placeholder="116.24" step="0.01"></div>
+      <div class="ep-field"><label>Cor da Campanha</label><input type="color" id="c${i}_cor" value="${cor}" style="width:44px;height:36px;border:none;border-radius:7px;cursor:pointer;padding:2px"></div>
+    </div>
+  `;
+  document.getElementById('campsList').appendChild(div);
+}
+
+function removeCamp(i){ document.getElementById('camp-block-'+i).remove(); }
+
+function g(id){ return document.getElementById(id)?.value||''; }
+
+function savePeriodo(){
+  const nome=g('f_nome'), inicio=g('f_inicio'), fim=g('f_fim');
+  if(!nome||!inicio||!fim){alert('Preencha Nome, Data Início e Data Fim');return;}
+  const gasto=g('f_meta_gasto');
+  if(!gasto){alert('Preencha o Gasto Total de Meta Ads');return;}
+
+  // Collect campaigns
+  const camps=[];
+  let ci=1;
+  while(document.getElementById('camp-block-'+ci)){
+    const nome_c=g('c'+ci+'_nome');
+    const cliques=g('c'+ci+'_cliques');
+    if(nome_c&&cliques){
+      camps.push({
+        id:'c'+ci+'_'+Date.now(),
+        nome:nome_c,
+        cliques:+g('c'+ci+'_cliques')||0,
+        alcance:+g('c'+ci+'_alcance')||0,
+        impressoes:+g('c'+ci+'_impressoes')||0,
+        cpm:+g('c'+ci+'_cpm')||0,
+        gasto:+g('c'+ci+'_gasto')||0,
+        fb_cl:+g('c'+ci+'_fb_cl')||0,
+        ig_cl:+g('c'+ci+'_ig_cl')||0,
+        fb_alc:+g('c'+ci+'_fb_alc')||0,
+        ig_alc:+g('c'+ci+'_ig_alc')||0,
+        fb_g:+g('c'+ci+'_fb_g')||0,
+        ig_g:+g('c'+ci+'_ig_g')||0,
+        cor:g('c'+ci+'_cor')||COLORS_CAMP[ci%COLORS_CAMP.length]
+      });
+    }
+    ci++;
+  }
+  if(!camps.length){alert('Adicione ao menos uma campanha com nome e cliques');return;}
+
+  const periodo={
+    id:'p_'+Date.now(),
+    nome, inicio, fim,
+    meta_ads:{ gasto:+gasto, campanhas:camps },
+    instagram:{
+      seguidores:+g('f_ig_seg')||0, seg_novos:+g('f_ig_seg_novos')||0,
+      alcance:+g('f_ig_alcance')||0, impressoes:+g('f_ig_impressoes')||0,
+      engajamento_pct:+g('f_ig_eng')||0, posts:+g('f_ig_posts')||0,
+      reels:+g('f_ig_reels')||0, stories:+g('f_ig_stories')||0,
+      curtidas:+g('f_ig_curtidas')||0, comentarios:+g('f_ig_comentarios')||0,
+      compartilhamentos:+g('f_ig_compartilhamentos')||0,
+      salvamentos:+g('f_ig_salvamentos')||0,
+      reels_views:+g('f_ig_reels_views')||0,
+      stories_views:+g('f_ig_stories_views')||0,
+      top_posts:[]
+    },
+    facebook:{
+      seguidores:+g('f_fb_seg')||0, seg_novos:+g('f_fb_seg_novos')||0,
+      alcance:+g('f_fb_alcance')||0, impressoes:+g('f_fb_impressoes')||0,
+      posts:+g('f_fb_posts')||0, videos:+g('f_fb_videos')||0,
+      reacoes:+g('f_fb_reacoes')||0, comentarios:+g('f_fb_comentarios')||0,
+      compartilhamentos:+g('f_fb_compartilhamentos')||0,
+      cliques_link:+g('f_fb_cliques')||0,
+      videos_views:+g('f_fb_videos_views')||0,
+      engajamento_pct:+g('f_fb_eng')||0
+    },
+    analise:g('f_analise'),
+    recomendacoes:[]
+  };
+
+  // Insert sorted by date (newest first)
+  periodos.unshift(periodo);
+  periodos.sort((a,b)=>new Date(b.inicio)-new Date(a.inicio));
+  saveStorage();
+
+  alert(`✅ Período "${nome}" salvo com sucesso!`);
+  resetForm();
+  switchEpTab('list',document.querySelector('.ep>.ep-tabs .ep-tab'));
+  renderSavedList();
+
+  // Auto-show the new period
+  document.getElementById('dateFrom').value=inicio;
+  document.getElementById('dateTo').value=fim;
+  showPeriod(inicio,fim);
+  closeEditor();
+}
+
+function resetForm(){
+  ['f_nome','f_inicio','f_fim','f_analise','f_meta_gasto','f_ig_seg','f_ig_seg_novos','f_ig_alcance','f_ig_impressoes','f_ig_eng','f_ig_posts','f_ig_reels','f_ig_stories','f_ig_curtidas','f_ig_comentarios','f_ig_compartilhamentos','f_ig_salvamentos','f_ig_reels_views','f_ig_stories_views','f_fb_seg','f_fb_seg_novos','f_fb_alcance','f_fb_impressoes','f_fb_posts','f_fb_videos','f_fb_reacoes','f_fb_comentarios','f_fb_compartilhamentos','f_fb_cliques','f_fb_videos_views','f_fb_eng'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  initCampForm();
+}
+
+// ════════════════════════════════════════════════════════════
+//  SETTINGS
+// ════════════════════════════════════════════════════════════
+function openSettings(){document.getElementById('ovSettings').classList.add('open')}
+function closeSettings(){document.getElementById('ovSettings').classList.remove('open')}
+function hexToRgb(h){const x=h.replace('#','');return{r:parseInt(x.slice(0,2),16),g:parseInt(x.slice(2,4),16),b:parseInt(x.slice(4,6),16)}}
+function toH(n){return Math.max(0,Math.min(255,Math.round(n))).toString(16).padStart(2,'0')}
+function lighten(h,f){const{r,g,b}=hexToRgb(h);return'#'+toH(r+(255-r)*f)+toH(g+(255-g)*f)+toH(b+(255-b)*f)}
+function darken(h,f){const{r,g,b}=hexToRgb(h);return'#'+toH(r*f)+toH(g*f)+toH(b*f)}
+function syncCol(w){document.getElementById('ch'+w).value=document.getElementById('cp'+w).value}
+function syncHex(w){const v=document.getElementById('ch'+w).value.trim();if(/^#[0-9a-fA-F]{6}$/.test(v))document.getElementById('cp'+w).value=v}
+function pickP(w,el){const c=el.dataset.c;document.getElementById('cp'+w).value=c;document.getElementById('ch'+w).value=c;document.querySelectorAll('#pr'+w+' .preset').forEach(p=>p.classList.remove('act'));el.classList.add('act')}
+function applySettings(){
+  const acc=document.getElementById('chAcc').value.trim(), hdr=document.getElementById('chHdr').value.trim();
+  if(!/^#[0-9a-fA-F]{6}$/.test(acc)||!/^#[0-9a-fA-F]{6}$/.test(hdr)){alert('Cor inválida (#RRGGBB)');return;}
+  const r=document.documentElement.style;
+  r.setProperty('--acc',acc); r.setProperty('--acc-l',lighten(acc,.88));
+  r.setProperty('--acc-d',darken(acc,.82)); r.setProperty('--bg',lighten(acc,.96));
+  r.setProperty('--hdr',hdr);
+  const name=document.getElementById('siName').value.trim();
+  if(name){document.getElementById('hdrName').textContent=name;document.title=name+' — Dashboard';}
+  closeSettings();
+  if(pAtual)renderAll(pAtual,null);
+}
+
+function handleLogo(input){
+  const f=input.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    const src=e.target.result;
+    document.getElementById('logoPreview').src=src; document.getElementById('logoPreview').style.display='block';
+    const img=document.getElementById('hdrLogoImg'); img.src=src; img.style.display='block';
+    document.getElementById('logoBox').style.fontSize='0';
+  };
+  r.readAsDataURL(f);
+}
+
+// ════════════════════════════════════════════════════════════
+//  PDF
+// ════════════════════════════════════════════════════════════
+function exportPDF(){
+  if(!pAtual){alert('Selecione um período primeiro.');return;}
+  const name=document.getElementById('hdrName').textContent;
+  document.querySelectorAll('.tab').forEach(t=>t.style.display='block');
+  document.querySelectorAll('.no-print').forEach(t=>t.style.display='none');
+  document.getElementById('noDataBanner').style.display='none';
+  html2pdf().set({
+    margin:[6,6,6,6],
+    filename:`${name.replace(/\s+/g,'_')}_${pAtual.inicio}_${pAtual.fim}.pdf`,
+    image:{type:'jpeg',quality:.95},
+    html2canvas:{scale:1.4,useCORS:true,logging:false},
+    jsPDF:{unit:'mm',format:'a4',orientation:'landscape'},
+    pagebreak:{mode:['avoid-all','css']}
+  }).from(document.getElementById('mainContent')).save().then(()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.style.display='');
+    document.querySelectorAll('.no-print').forEach(t=>t.style.display='');
+    document.getElementById('noDataBanner').style.display='flex';
+    document.querySelector('.tab-btn.act')?.click();
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+//  SEED DATA — Dados reais extraídos dos relatórios mLabs
+//  (Banda Universos | Março + Semana 1 + Semana 2 Abril 2026)
+// ════════════════════════════════════════════════════════════
+const SEED_DATA = [
+  {
+    id:'sem2_abr_2026', nome:'Semana 2 Abril', inicio:'2026-04-06', fim:'2026-04-12',
+    meta_ads:{
+      gasto:264.08,
+      campanhas:[
+        {id:'c1',nome:'Evento FPC',cliques:546,alcance:11153,impressoes:15852,cpm:6.72,gasto:106.36,fb_cl:474,ig_cl:72,fb_alc:9079,ig_alc:2937,fb_g:92.32,ig_g:14.04,cor:'#7C3AED'},
+        {id:'c2',nome:'Lançamento Momento de Paz',cliques:501,alcance:10239,impressoes:14553,cpm:6.72,gasto:97.71,fb_cl:435,ig_cl:66,fb_alc:8335,ig_alc:2697,fb_g:84.82,ig_g:12.89,cor:'#A855F7'},
+        {id:'c3',nome:'Família ao pé da Cruz',cliques:308,alcance:6282,impressoes:8899,cpm:6.72,gasto:60.01,fb_cl:267,ig_cl:41,fb_alc:5113,ig_alc:1655,fb_g:52.09,ig_g:7.92,cor:'#C084FC'}
+      ],
+      meta_criativos:[
+        {img:'',caption:'É HOJE o grande dia do evento "Família ao Pé da Cruz"!',cl:1266,cpc:0.06,alcance:16553,impressoes:18577,cpm:4.39,frequencia:1.12},
+        {img:'',caption:'O mundo faz barulho de guerra… Mas a música ainda pode falar mais alto',cl:1163,cpc:0.11,alcance:16690,impressoes:25051,cpm:7.74,frequencia:1.50},
+        {img:'',caption:'Já está preparado para o evento? Estamos ensaiando…',cl:715,cpc:0.05,alcance:5782,impressoes:7576,cpm:4.43,frequencia:1.31}
+      ]
+    },
+    instagram:{
+      seguidores:320843,seg_novos:0,alcance:251922,impressoes:1108392,
+      engajamento_pct:17.92,posts:13,reels:10,stories:9,
+      curtidas:68536,comentarios:687,compartilhamentos:3549,salvamentos:0,
+      reels_views:686438,stories_views:100675,
+      ig_top_posts:[
+        {img:'',caption:'🙏 Família ao Pé da Cruz — evento inesquecível!',alcance:108813,curtidas:16230,comentarios:109,tipo:'Reels',salvamentos:989,compartilhamentos:457},
+        {img:'',caption:'❤️ Momentos que marcaram para sempre — Família ao Pé da Cruz',alcance:97032,curtidas:16518,comentarios:145,tipo:'Reels',salvamentos:467,compartilhamentos:237},
+        {img:'',caption:'Também vos digo que, se dois de vós concordarem na terra…',alcance:63098,curtidas:10269,comentarios:151,tipo:'Carrossel',salvamentos:489,compartilhamentos:212},
+        {img:'',caption:'🎵 Banda Universos ao vivo — noite histórica',alcance:55684,curtidas:9176,comentarios:128,tipo:'Reels',salvamentos:616,compartilhamentos:263},
+        {img:'',caption:'#bandauniversos #famíliaaospésdacruz #igrejauniversal',alcance:44761,curtidas:4481,comentarios:53,tipo:'Reels',salvamentos:139,compartilhamentos:72},
+        {img:'',caption:'🙌 Gratidão por cada presença nessa noite especial',alcance:31350,curtidas:2792,comentarios:22,tipo:'Feed',salvamentos:177,compartilhamentos:63},
+        {img:'',caption:'Ouça agora a trilha "Por que finge não ver?" da série',alcance:29814,curtidas:3696,comentarios:20,tipo:'Feed',salvamentos:128,compartilhamentos:208},
+        {img:'',caption:'Amanhã vai ser especial… e aqui vai um gostinho do que vem por aí',alcance:19356,curtidas:1474,comentarios:22,tipo:'Feed',salvamentos:88,compartilhamentos:28},
+        {img:'',caption:'No dia 3/04, vivemos um grande momento com o evento',alcance:16500,curtidas:1404,comentarios:17,tipo:'Feed',salvamentos:36,compartilhamentos:28},
+        {img:'',caption:'Momentos especiais vividos no final da tarde no Itaquera',alcance:13215,curtidas:2165,comentarios:28,tipo:'Feed',salvamentos:81,compartilhamentos:50}
+      ]
+    },
+    facebook:{
+      seguidores:97766,seg_novos:0,alcance:310500,impressoes:571356,posts:23,videos:0,reacoes:54490,comentarios:0,compartilhamentos:0,cliques_link:1355,videos_views:0,engajamento_pct:0,
+      fb_top_posts:[
+        {img:'',caption:'🙏 Família ao Pé da Cruz — evento inesquecível!',alcance:159472,visualizacoes:127480,cliques:1931,tipo:'Reels'},
+        {img:'',caption:'❤️ Momentos que marcaram para sempre — Família ao Pé da Cruz',alcance:154999,visualizacoes:113872,cliques:1402,tipo:'Reels'},
+        {img:'',caption:'Também vos digo que, se dois de vós concordarem na terra…',alcance:147852,visualizacoes:133179,cliques:1720,tipo:'Carrossel'},
+        {img:'',caption:'🎵 Banda Universos ao vivo — noite histórica',alcance:138606,visualizacoes:114842,cliques:1576,tipo:'Reels'},
+        {img:'',caption:'#bandauniversos #famíliaaospésdacruz #igrejauniversal',alcance:83576,visualizacoes:72038,cliques:985,tipo:'Reels'},
+        {img:'',caption:'🙌 Gratidão por cada presença nessa noite especial',alcance:64146,visualizacoes:56427,cliques:506,tipo:'Feed'},
+        {img:'',caption:'Ouça agora a trilha "Por que finge não ver?" da série',alcance:24776,visualizacoes:21208,cliques:203,tipo:'Feed'},
+        {img:'',caption:'Amanhã vai ser especial… e aqui vai um gostinho do que vem por aí',alcance:18326,visualizacoes:16068,cliques:119,tipo:'Feed'},
+        {img:'',caption:'No dia 3/04, vivemos um grande momento com o evento',alcance:7291,visualizacoes:7080,cliques:67,tipo:'Feed'},
+        {img:'',caption:'Momentos especiais vividos no final da tarde no Itaquera',alcance:6343,visualizacoes:6008,cliques:26,tipo:'Feed'}
+      ]
+    },
+    analise:'Semana 06–12/04/2026: período pós-evento com estabilidade nas campanhas. Total de R$ 264,08 investidos em Meta Ads gerando 1.355 cliques com CPC de R$ 0,19. Instagram orgânico excepcional com 1,1M de visualizações e 251k de alcance em 13 publicações — engajamento de 17,92% muito acima da média do segmento. Facebook com 310k de alcance e 97.766 seguidores na página.',
+    recomendacoes:[
+      {icon:'📈',txt:'<strong>Escalar campanhas para próxima semana:</strong> Com CPC de R$ 0,19, há espaço para otimização. Testar novos criativos inspirados nos posts orgânicos com maior engajamento (18–19%).'},
+      {icon:'🎬',txt:'<strong>Reels performando acima da expectativa:</strong> 686k views nesta semana. Aumentar frequência para 3–4 Reels/semana para capitalizar o alcance orgânico.'},
+      {icon:'📘',txt:'<strong>Facebook orgânico:</strong> 310k de alcance com dados de engajamento parciais. Completar com dados do Facebook Insights para análise completa.'}
+    ]
+  },
+  {
+    id:'sem1_abr_2026', nome:'Semana 1 Abril', inicio:'2026-04-01', fim:'2026-04-05',
+    meta_ads:{
+      gasto:199.09,
+      campanhas:[
+        {id:'c1',nome:'Evento FPC',cliques:1163,alcance:12640,impressoes:18037,cpm:4.45,gasto:80.24,fb_cl:977,ig_cl:186,fb_alc:9353,ig_alc:3287,fb_g:59.38,ig_g:20.86,cor:'#7C3AED'},
+        {id:'c2',nome:'Lançamento Momento de Paz',cliques:1068,alcance:11605,impressoes:16561,cpm:4.45,gasto:73.63,fb_cl:897,ig_cl:171,fb_alc:8588,ig_alc:3017,fb_g:54.48,ig_g:19.15,cor:'#A855F7'},
+        {id:'c3',nome:'Família ao pé da Cruz',cliques:656,alcance:7119,impressoes:10159,cpm:4.45,gasto:45.22,fb_cl:551,ig_cl:105,fb_alc:5267,ig_alc:1852,fb_g:33.47,ig_g:11.75,cor:'#C084FC'}
+      ],
+      meta_criativos:[
+        {img:'',caption:'É HOJE o grande dia do evento "Família ao Pé da Cruz"!',cl:1266,cpc:0.06,alcance:16553,impressoes:18577,cpm:4.39,frequencia:1.12},
+        {img:'',caption:'O mundo faz barulho de guerra… Mas a música ainda pode falar mais alto',cl:1163,cpc:0.11,alcance:16690,impressoes:25051,cpm:7.74,frequencia:1.50},
+        {img:'',caption:'Já está preparado para o evento? Estamos ensaiando…',cl:715,cpc:0.05,alcance:5782,impressoes:7576,cpm:4.43,frequencia:1.31}
+      ]
+    },
+    instagram:{
+      seguidores:321022,seg_novos:1422,alcance:281034,impressoes:1277795,
+      engajamento_pct:16.95,posts:15,reels:10,stories:10,
+      curtidas:70448,comentarios:708,compartilhamentos:3600,salvamentos:0,
+      reels_views:686438,stories_views:100675,
+      ig_top_posts:[
+        {img:'',caption:'🙏 Família ao Pé da Cruz — evento inesquecível!',alcance:108813,curtidas:16230,comentarios:109,tipo:'Reels',salvamentos:989,compartilhamentos:457},
+        {img:'',caption:'❤️ Momentos que marcaram para sempre — Família ao Pé da Cruz',alcance:97032,curtidas:16518,comentarios:145,tipo:'Reels',salvamentos:467,compartilhamentos:237},
+        {img:'',caption:'Também vos digo que, se dois de vós concordarem na terra…',alcance:63098,curtidas:10269,comentarios:151,tipo:'Carrossel',salvamentos:489,compartilhamentos:212},
+        {img:'',caption:'🎵 Banda Universos ao vivo — noite histórica',alcance:55684,curtidas:9176,comentarios:128,tipo:'Reels',salvamentos:616,compartilhamentos:263},
+        {img:'',caption:'#bandauniversos #famíliaaospésdacruz #igrejauniversal',alcance:44761,curtidas:4481,comentarios:53,tipo:'Reels',salvamentos:139,compartilhamentos:72},
+        {img:'',caption:'🙌 Gratidão por cada presença nessa noite especial',alcance:31350,curtidas:2792,comentarios:22,tipo:'Feed',salvamentos:177,compartilhamentos:63},
+        {img:'',caption:'Ouça agora a trilha "Por que finge não ver?" da série',alcance:29814,curtidas:3696,comentarios:20,tipo:'Feed',salvamentos:128,compartilhamentos:208},
+        {img:'',caption:'Amanhã vai ser especial… e aqui vai um gostinho do que vem por aí',alcance:19356,curtidas:1474,comentarios:22,tipo:'Feed',salvamentos:88,compartilhamentos:28},
+        {img:'',caption:'No dia 3/04, vivemos um grande momento com o evento',alcance:16500,curtidas:1404,comentarios:17,tipo:'Feed',salvamentos:36,compartilhamentos:28},
+        {img:'',caption:'Momentos especiais vividos no final da tarde no Itaquera',alcance:13215,curtidas:2165,comentarios:28,tipo:'Feed',salvamentos:81,compartilhamentos:50}
+      ]
+    },
+    facebook:{
+      seguidores:98813,seg_novos:0,alcance:463395,impressoes:822405,posts:30,videos:0,reacoes:75161,comentarios:0,compartilhamentos:0,cliques_link:2887,videos_views:0,engajamento_pct:0,
+      fb_top_posts:[
+        {img:'',caption:'🙏 Família ao Pé da Cruz — evento inesquecível!',alcance:159472,visualizacoes:127480,cliques:1931,tipo:'Reels'},
+        {img:'',caption:'❤️ Momentos que marcaram para sempre — Família ao Pé da Cruz',alcance:154999,visualizacoes:113872,cliques:1402,tipo:'Reels'},
+        {img:'',caption:'Também vos digo que, se dois de vós concordarem na terra…',alcance:147852,visualizacoes:133179,cliques:1720,tipo:'Carrossel'},
+        {img:'',caption:'🎵 Banda Universos ao vivo — noite histórica',alcance:138606,visualizacoes:114842,cliques:1576,tipo:'Reels'},
+        {img:'',caption:'#bandauniversos #famíliaaospésdacruz #igrejauniversal',alcance:83576,visualizacoes:72038,cliques:985,tipo:'Reels'},
+        {img:'',caption:'🙌 Gratidão por cada presença nessa noite especial',alcance:64146,visualizacoes:56427,cliques:506,tipo:'Feed'},
+        {img:'',caption:'Ouça agora a trilha "Por que finge não ver?" da série',alcance:24776,visualizacoes:21208,cliques:203,tipo:'Feed'},
+        {img:'',caption:'Amanhã vai ser especial… e aqui vai um gostinho do que vem por aí',alcance:18326,visualizacoes:16068,cliques:119,tipo:'Feed'},
+        {img:'',caption:'No dia 3/04, vivemos um grande momento com o evento',alcance:7291,visualizacoes:7080,cliques:67,tipo:'Feed'},
+        {img:'',caption:'Momentos especiais vividos no final da tarde no Itaquera',alcance:6343,visualizacoes:6008,cliques:26,tipo:'Feed'}
+      ]
+    },
+    analise:'Semana 01–05/04/2026: semana do grande evento Família ao Pé da Cruz (03/04). Performance excepcional — R$ 199,09 investidos em Meta Ads gerando 2.887 cliques com CPC de R$ 0,07 (eficiência máxima). Instagram registrou números históricos: 1,27M visualizações, 281k alcance, 70,4k curtidas e 16,95% de engajamento. Facebook com 463k de alcance e 75k engajamentos na página.',
+    recomendacoes:[
+      {icon:'🏆',txt:'<strong>Semana do evento: resultados excepcionais.</strong> CPC de R$ 0,07 e 2.887 cliques. Replicar a estratégia de conteúdo e campanha para os próximos eventos.'},
+      {icon:'📸',txt:'<strong>Instagram orgânico histórico:</strong> 1,27M visualizações e 70,4k curtidas. O conteúdo do evento dominou o feed. Criar série de bastidores e depoimentos para manter o momentum.'},
+      {icon:'🎯',txt:'<strong>Campanha Evento FPC foi a mais eficiente:</strong> CPC R$ 0,06. Usar este aprendizado de público e criativo como base para o próximo evento.'}
+    ]
+  },
+  {
+    id:'marco_2026', nome:'Março 2026', inicio:'2026-03-01', fim:'2026-03-31',
+    meta_ads:{
+      gasto:32.82,
+      campanhas:[
+        {id:'c1',nome:'Pós-Evento FPC',cliques:237,alcance:2852,impressoes:3190,cpm:5.52,gasto:17.59,fb_cl:212,ig_cl:25,fb_alc:2133,ig_alc:719,fb_g:12.74,ig_g:4.85,cor:'#7C3AED'},
+        {id:'c2',nome:'Lançamento Momento de Paz',cliques:205,alcance:2469,impressoes:2756,cpm:5.52,gasto:15.23,fb_cl:183,ig_cl:22,fb_alc:1845,ig_alc:603,fb_g:11.05,ig_g:4.18,cor:'#A855F7'}
+      ],
+      meta_criativos:[
+        {img:'',caption:'O mundo faz barulho de guerra… Mas a música ainda pode falar mais alto',cl:629,cpc:0.16,alcance:12738,impressoes:16062,cpm:7.90,frequencia:1.26},
+        {img:'',caption:'(Criativo sem texto visível)',cl:479,cpc:0.24,alcance:12704,impressoes:15920,cpm:9.05,frequencia:1.25},
+        {img:'',caption:'(Criativo sem texto visível)',cl:145,cpc:0.22,alcance:3837,impressoes:4719,cpm:8.32,frequencia:1.23},
+        {img:'',caption:'(Criativo sem texto visível)',cl:102,cpc:0.16,alcance:2035,impressoes:2603,cpm:8.15,frequencia:1.28}
+      ]
+    },
+    instagram:{
+      seguidores:321477,seg_novos:0,alcance:141947,impressoes:370801,
+      engajamento_pct:11.73,posts:7,reels:6,stories:7,
+      curtidas:13082,comentarios:236,compartilhamentos:605,salvamentos:0,
+      reels_views:139554,stories_views:51963,
+      ig_top_posts:[
+        {img:'',caption:'Reviva os momentos mais marcantes desse grande evento',alcance:27734,curtidas:4427,comentarios:30,tipo:'Reels',salvamentos:79,compartilhamentos:87},
+        {img:'',caption:'Como é bom saber que tem alguém que pode te ouvir',alcance:21906,curtidas:2465,comentarios:37,tipo:'Reels',salvamentos:230,compartilhamentos:88},
+        {img:'',caption:'Assista agora o clipe oficial da trilha sonora – acesse já!',alcance:20271,curtidas:2817,comentarios:32,tipo:'Reels',salvamentos:150,compartilhamentos:180},
+        {img:'',caption:'No dia 3/04, vivemos um grande momento com o evento',alcance:16500,curtidas:1404,comentarios:17,tipo:'Feed',salvamentos:36,compartilhamentos:28},
+        {img:'',caption:'Você que acompanha cada capítulo de Reis, agora de...',alcance:8870,curtidas:975,comentarios:10,tipo:'Feed',salvamentos:87,compartilhamentos:42},
+        {img:'',caption:'Qual música da banda não pode faltar de jeito nenhum?',alcance:5552,curtidas:486,comentarios:106,tipo:'Feed',salvamentos:9,compartilhamentos:11},
+        {img:'',caption:'Assista agora Honras e Glórias – disponível nas plataformas',alcance:5168,curtidas:508,comentarios:4,tipo:'Feed',salvamentos:15,compartilhamentos:15},
+        {img:'',caption:'Confira nosso próximo evento — em breve!',alcance:4500,curtidas:320,comentarios:15,tipo:'Feed',salvamentos:10,compartilhamentos:8},
+        {img:'',caption:'Conhece alguém que merecia estar aqui?',alcance:3200,curtidas:250,comentarios:8,tipo:'Feed',salvamentos:5,compartilhamentos:6},
+        {img:'',caption:'Nosso trabalho segue em frente…',alcance:2800,curtidas:180,comentarios:5,tipo:'Feed',salvamentos:3,compartilhamentos:4}
+      ]
+    },
+    facebook:{
+      seguidores:99772,seg_novos:0,alcance:302461,impressoes:489545,posts:16,videos:0,reacoes:39829,comentarios:0,compartilhamentos:0,cliques_link:442,videos_views:0,engajamento_pct:0,
+      fb_top_posts:[
+        {img:'',caption:'Reviva os momentos mais marcantes desse grande evento',alcance:34238,visualizacoes:31124,cliques:112,tipo:'Reels'},
+        {img:'',caption:'Como é bom saber que tem alguém que pode te ouvir',alcance:21954,visualizacoes:19593,cliques:141,tipo:'Reels'},
+        {img:'',caption:'Há momentos que não se explicam, apenas se sentem',alcance:20073,visualizacoes:21366,cliques:671,tipo:'Feed'},
+        {img:'',caption:'Qual música da banda não pode faltar de jeito nenhum?',alcance:10388,visualizacoes:6178,cliques:592,tipo:'Feed'},
+        {img:'',caption:'Assista agora Honras e Glórias – disponível nas plataformas',alcance:7291,visualizacoes:7080,cliques:67,tipo:'Feed'},
+        {img:'',caption:'No dia 3/04, vivemos um grande momento com o evento',alcance:6343,visualizacoes:6008,cliques:26,tipo:'Feed'},
+        {img:'',caption:'Você que acompanha cada capítulo de Reis',alcance:6322,visualizacoes:5997,cliques:64,tipo:'Feed'},
+        {img:'',caption:'Assista agora o clipe oficial da trilha sonora',alcance:2142,visualizacoes:2132,cliques:23,tipo:'Feed'},
+        {img:'',caption:'Confira nosso próximo evento — em breve!',alcance:1800,visualizacoes:1500,cliques:18,tipo:'Feed'},
+        {img:'',caption:'Nosso trabalho segue em frente…',alcance:1200,visualizacoes:950,cliques:12,tipo:'Feed'}
+      ]
+    },
+    analise:'Março 2026: mês de aquecimento pós-eventos anteriores. R$ 32,82 investidos em Meta Ads com 442 cliques e CPC de R$ 0,07. Instagram orgânico com 321.477 seguidores, 141.947 de alcance e 11,73% de engajamento. Facebook com 99.772 seguidores e 302.461 de alcance. Campanhas focadas em Pós-Evento FPC e Lançamento Momento de Paz como preparação para o grande evento de abril.',
+    recomendacoes:[
+      {icon:'📊',txt:'<strong>Orçamento menor em março (R$ 32,82):</strong> Com bom CPC (R$ 0,07), há espaço para escalar. Aumentar budget gradualmente para construir audiência antes dos próximos eventos.'},
+      {icon:'🎬',txt:'<strong>Reels com 139k views com baixo investimento:</strong> A trilha sonora e os bastidores geram engajamento natural. Manter cadência de publicação de Reels orgânicos.'},
+      {icon:'📘',txt:'<strong>Facebook com 99,7k seguidores na página:</strong> Alcance orgânico de 302k é muito expressivo. Dados de engajamento por post precisam ser completados via Facebook Insights.'}
+    ]
+  }
+];
+
+// ════════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  periodos=loadStorage();
+  // Se não houver dados locais, carregar seed data dos relatórios mLabs
+  if(!periodos.length){
+    periodos=JSON.parse(JSON.stringify(SEED_DATA));
+    saveStorage();
+  }
+  if(periodos.length){
+    // Auto-show period most recent
+    const p=periodos[0];
+    document.getElementById('dateFrom').value=p.inicio;
+    document.getElementById('dateTo').value=p.fim;
+    showPeriod(p.inicio,p.fim);
+    document.getElementById('hdrName').textContent='Banda Universos';
+    document.title='Banda Universos — Dashboard Marketing';
+  } else {
+    document.getElementById('noDataBanner').style.display='flex';
+  }
+});
+</script>
+</body>
+</html>
