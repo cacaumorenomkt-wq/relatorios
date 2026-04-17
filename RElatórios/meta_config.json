@@ -1,0 +1,34 @@
+{
+  "_instrucoes": "NUNCA compartilhe este arquivo. Contém tokens de acesso privados.",
+  "_versao": "2.0",
+
+  "agencia": {
+    "nome": "Cacau Moreno MKT",
+    "business_id": "541230842991114"
+  },
+
+  "github": {
+    "token": "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",
+    "owner": "cacaumorenomkt-wq",
+    "repo": "relatorios"
+  },
+
+  "clientes": [
+    {
+      "nome": "Banda Universos",
+      "ativo": true,
+      "instagram": {
+        "instagram_business_id": "108409875235747",
+        "access_token": "EAARtbSoHVEwBRGqgzb1dJt3FrFgWAlZCeHrGVC40x7VLgf0NWZBBxmBwNQfFVuyqKHtgYbvpkbztEwHmSN80YDurrKnMcjWZCYkc4AeNZB6oWNB2oWWS1fxTF8ZCPzgIJaO2GCTJ0nd72gBTiOaPADbvW4ukSX71ZCTwreHJyhD9NZAs80jMVQl9Qo6lNJb4WxJsDkSgeJafnWgqH5Bov0zTvidquQxzRnmDh1R1OuE1Pa23XJtNSZAaJBMSEKxZCRC6eiS7KIpEJGZBWixOedb55JUjBmgF8XhRaExW417XrZB25SI9NEMEY21R74L7QhtkDQZD"
+      },
+      "facebook": {
+        "page_id": "252716145426540",
+        "access_token": "EAARtbSoHVEwBRGqgzb1dJt3FrFgWAlZCeHrGVC40x7VLgf0NWZBBxmBwNQfFVuyqKHtgYbvpkbztEwHmSN80YDurrKnMcjWZCYkc4AeNZB6oWNB2oWWS1fxTF8ZCPzgIJaO2GCTJ0nd72gBTiOaPADbvW4ukSX71ZCTwreHJyhD9NZAs80jMVQl9Qo6lNJb4WxJsDkSgeJafnWgqH5Bov0zTvidquQxzRnmDh1R1OuE1Pa23XJtNSZAaJBMSEKxZCRC6eiS7KIpEJGZBWixOedb55JUjBmgF8XhRaExW417XrZB25SI9NEMEY21R74L7QhtkDQZD"
+      },
+      "ads": {
+        "ad_account_id": "act_23843936709750305",
+        "access_token": "EAARtbSoHVEwBRGqgzb1dJt3FrFgWAlZCeHrGVC40x7VLgf0NWZBBxmBwNQfFVuyqKHtgYbvpkbztEwHmSN80YDurrKnMcjWZCYkc4AeNZB6oWNB2oWWS1fxTF8ZCPzgIJaO2GCTJ0nd72gBTiOaPADbvW4ukSX71ZCTwreHJyhD9NZAs80jMVQl9Qo6lNJb4WxJsDkSgeJafnWgqH5Bov0zTvidquQxzRnmDh1R1OuE1Pa23XJtNSZAaJBMSEKxZCRC6eiS7KIpEJGZBWixOedb55JUjBmgF8XhRaExW417XrZB25SI9NEMEY21R74L7QhtkDQZD"
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "nome": "Banda Universos",
+  "cor_principal": "#7C3AED",
+  "cor_header": "#1E1B4B",
+  "logo_url": null,
+  "arquivo_saida": "dashboard-banda-universos.html",
+  "plataformas": ["instagram", "facebook", "meta_ads"]
+}

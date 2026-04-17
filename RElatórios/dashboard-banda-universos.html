@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Banda Universos — Semana 14/04/2026</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --accent: #7C3AED;
+      --accent-light: #EDE9FE;
+      --accent-dark: #6D28D9;
+      --bg-primary: #F5F3FF;
+      --bg-card: #FFFFFF;
+      --bg-header: #1E1B4B;
+      --text-primary: #111827;
+      --text-secondary: #6B7280;
+      --text-on-dark: #FFFFFF;
+      --positive: #059669;
+      --negative: #DC2626;
+      --warning: #D97706;
+      --border: #E5E7EB;
+      --gap: 16px;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,0.09);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+    .container { max-width: 1280px; margin: 0 auto; padding: 20px var(--gap); }
+
+    /* ── HEADER ── */
+    .header {
+      background: var(--bg-header);
+      color: var(--text-on-dark);
+      padding: 22px 32px;
+      border-radius: var(--radius);
+      margin-bottom: var(--gap);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      box-shadow: var(--shadow-lg);
+    }
+    .header-left { display: flex; flex-direction: column; gap: 4px; }
+    .header-left .client-name { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+    .header-left .periodo { font-size: 13px; opacity: 0.7; }
+    .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .badge {
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.3px;
+    }
+    .source-badge {
+      font-size: 11px;
+      opacity: 0.55;
+    }
+
+    /* ── KPI GRID ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--gap);
+      margin-bottom: var(--gap);
+    }
+    @media (max-width: 1024px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 768px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .kpi-grid { grid-template-columns: 1fr; } }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      border-top: 3px solid var(--accent);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .kpi-card.instagram { border-top-color: #E1306C; }
+    .kpi-card.facebook { border-top-color: #1877F2; }
+    .kpi-card .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-secondary); }
+    .kpi-card .kpi-value { font-size: 26px; font-weight: 700; color: var(--text-primary); line-height: 1.1; }
+    .kpi-card .kpi-sub { font-size: 12px; color: var(--text-secondary); }
+
+    /* ── TABS ── */
+    .tabs-nav {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 6px;
+      margin-bottom: var(--gap);
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 9px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .tab-btn:hover:not(.active) { background: var(--accent-light); color: var(--accent); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── SECTION CARDS ── */
+    .section-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+      margin-bottom: var(--gap);
+    }
+    @media (max-width: 768px) { .section-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      box-shadow: var(--shadow);
+    }
+    .card.full { grid-column: 1 / -1; }
+    .card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card.full h3 { color: var(--text-secondary); }
+
+    /* ── METRICS TABLE ── */
+    .metrics-list { display: flex; flex-direction: column; gap: 10px; }
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      padding: 6px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-label { color: var(--text-secondary); }
+    .metric-value { font-weight: 700; color: var(--text-primary); }
+
+    /* ── CAMPAIGNS TABLE ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: var(--accent-light);
+      color: var(--accent-dark);
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 10px 14px;
+      text-align: left;
+    }
+    tbody tr { transition: background 0.15s; }
+    tbody tr:hover { background: #F9FAFB; }
+    tbody td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text-primary); }
+    .pct-bar {
+      display: inline-block;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 3px;
+      margin-left: 6px;
+      vertical-align: middle;
+      opacity: 0.4;
+    }
+
+    /* ── ANALYSIS ── */
+    .analysis-block { margin-bottom: var(--gap); }
+    .analysis-block h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+    .analysis-p {
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.7;
+      margin-bottom: 12px;
+      padding: 14px 18px;
+      background: #F9FAFB;
+      border-radius: 8px;
+      border-left: 3px solid var(--accent);
+    }
+
+    /* ── RECOMMENDATIONS ── */
+    .reco-list { display: flex; flex-direction: column; gap: 10px; }
+    .reco-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 14px 16px;
+      background: var(--accent-light);
+      border-radius: 8px;
+    }
+    .reco-icon { font-size: 18px; flex-shrink: 0; }
+    .reco-text { font-size: 13px; color: #374151; line-height: 1.6; }
+    .reco-text strong { color: var(--accent-dark); }
+
+    /* ── CHART containers ── */
+    .chart-container { position: relative; }
+    .chart-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+      margin-bottom: var(--gap);
+    }
+    @media (max-width: 768px) { .chart-row { grid-template-columns: 1fr; } }
+
+    /* ── PLATFORM PILLS ── */
+    .platform-split {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .platform-pill {
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .platform-pill.fb { background: #E8F0FE; color: #1877F2; }
+    .platform-pill.ig { background: #FCE7F3; color: #E1306C; }
+
+    /* ── SECTION DIVIDER ── */
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--accent);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--accent-light);
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-secondary);
+      padding: 20px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: var(--gap);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <span class="client-name">🎵 Banda Universos</span>
+      <span class="periodo">📅 Meta Ads: 01/03/2026 – 13/04/2026 &nbsp;|&nbsp; Instagram Orgânico: 15/03/2026 – 13/04/2026</span>
+    </div>
+    <div class="header-right">
+      <span class="badge">✅ Atualizado em 14/04/2026</span>
+      <span class="source-badge">Fonte: mLabs / relatorio.digital</span>
+    </div>
+  </header>
+
+  <!-- KPI GRID -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <span class="kpi-label">💰 Investimento Total</span>
+      <span class="kpi-value">R$ 547,70</span>
+      <span class="kpi-sub">Meta Ads · período completo</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">👆 Cliques Totais</span>
+      <span class="kpi-value">4.927</span>
+      <span class="kpi-sub">↑ 6.649% vs. período anterior</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">📊 CTR Médio</span>
+      <span class="kpi-value">5,06%</span>
+      <span class="kpi-sub">↑ 7.278% vs. período anterior</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">💲 CPC Médio</span>
+      <span class="kpi-value">R$ 0,11</span>
+      <span class="kpi-sub">Custo por clique · todos</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">👁️ Alcance Pago</span>
+      <span class="kpi-value">60.613</span>
+      <span class="kpi-sub">↓ 35,83% vs. período anterior</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">📣 Impressões</span>
+      <span class="kpi-value">97.443</span>
+      <span class="kpi-sub">CPM R$ 5,62</span>
+    </div>
+    <div class="kpi-card instagram">
+      <span class="kpi-label">📸 Seguidores Instagram</span>
+      <span class="kpi-value">321.477</span>
+      <span class="kpi-sub">+4.904 novos seguidores</span>
+    </div>
+    <div class="kpi-card instagram">
+      <span class="kpi-label">❤️ Engajamento Instagram</span>
+      <span class="kpi-value">18,30%</span>
+      <span class="kpi-sub">↑ 66,52% vs. período anterior</span>
+    </div>
+    <div class="kpi-card instagram">
+      <span class="kpi-label">🌐 Alcance Orgânico IG</span>
+      <span class="kpi-value">373.853</span>
+      <span class="kpi-sub">↑ 59,67% vs. período anterior</span>
+    </div>
+    <div class="kpi-card facebook">
+      <span class="kpi-label">👍 Seguidores Facebook</span>
+      <span class="kpi-value">99.949</span>
+      <span class="kpi-sub">Seguidores da Página</span>
+    </div>
+    <div class="kpi-card facebook">
+      <span class="kpi-label">📺 Views Facebook</span>
+      <span class="kpi-value">1.510.496</span>
+      <span class="kpi-sub">Visualizações de página</span>
+    </div>
+    <div class="kpi-card facebook">
+      <span class="kpi-label">💬 Engaj. Facebook</span>
+      <span class="kpi-value">124.139</span>
+      <span class="kpi-sub">Engajamentos nas publicações</span>
+    </div>
+  </div>
+
+  <!-- TABS NAV -->
+  <nav class="tabs-nav">
+    <button class="tab-btn active" onclick="showTab('visao-geral')">🏠 Visão Geral</button>
+    <button class="tab-btn" onclick="showTab('meta-ads')">📣 Meta Ads</button>
+    <button class="tab-btn" onclick="showTab('instagram')">📸 Instagram</button>
+    <button class="tab-btn" onclick="showTab('facebook')">👍 Facebook</button>
+  </nav>
+
+  <!-- TAB: VISÃO GERAL -->
+  <div id="tab-visao-geral" class="tab-content active">
+
+    <div class="chart-row">
+      <div class="card">
+        <h3>📊 Distribuição do Investimento por Plataforma</h3>
+        <div class="chart-container" style="height:220px">
+          <canvas id="chartDonut"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>👆 Cliques por Plataforma</h3>
+        <div class="chart-container" style="height:220px">
+          <canvas id="chartCliquesPlat"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card full" style="margin-bottom:var(--gap)">
+      <h3>🏆 Performance por Campanha (Cliques)</h3>
+      <div class="chart-container" style="height:220px">
+        <canvas id="chartCampanhas"></canvas>
+      </div>
+    </div>
+
+    <div class="card full" style="margin-bottom:var(--gap)">
+      <h3>📊 Alcance Pago vs Orgânico por Plataforma</h3>
+      <div class="chart-container" style="height:220px">
+        <canvas id="chartAlcance"></canvas>
+      </div>
+    </div>
+
+    <!-- ANALYSIS -->
+    <div class="card full" style="margin-bottom:var(--gap)">
+      <h3>🔍 Análise Automática</h3>
+      <div class="analysis-block">
+        <div class="analysis-p">
+          <strong>Meta Ads — Desempenho do investimento:</strong> No período de 01/03 a 13/04/2026, a Banda Universos investiu <strong>R$ 547,70</strong> em anúncios pagos, alcançando <strong>60.613 pessoas</strong> e gerando <strong>4.927 cliques</strong> com um CTR de <strong>5,06%</strong> — resultado expressivo para o segmento de entretenimento musical. O CPC de apenas <strong>R$ 0,11</strong> demonstra eficiência elevada na aquisição de cliques, com CPM de R$ 5,62.
+        </div>
+        <div class="analysis-p">
+          <strong>Distribuição por plataforma:</strong> O Facebook concentrou <strong>64,8% dos cliques</strong> (3.195) com CPC de R$ 0,06, mostrando melhor eficiência de custo. O Instagram, com 35,2% dos cliques (1.732) e CPC de R$ 0,21, entregou maior alcance proporcional (36.075 vs 25.593 do Facebook), indicando que o Instagram funciona melhor para awareness e o Facebook para conversão de clique. A distribuição do investimento foi 67% Instagram (R$ 364,03) e 33% Facebook (R$ 183,67).
+        </div>
+        <div class="analysis-p">
+          <strong>Instagram Orgânico — Engajamento:</strong> A conta orgânica do Instagram apresentou resultados excepcionais: <strong>taxa de engajamento de 18,30%</strong> (↑66,52%), com 373.853 pessoas alcançadas e 68.405 pessoas engajadas. As 53 publicações no período geraram 2.745.669 visualizações e 126.395 curtidas. O alcance orgânico supera em 6x o alcance pago, confirmando a força da marca no ecossistema orgânico.
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:12px">💡 Recomendações Estratégicas</div>
+      <div class="reco-list">
+        <div class="reco-item">
+          <span class="reco-icon">🎯</span>
+          <span class="reco-text"><strong>Rebalancear investimento para o Facebook:</strong> O Facebook entregou CPC de R$ 0,06 vs R$ 0,21 do Instagram. Aumentar a fatia do Facebook para 50% do budget pode reduzir o CPC médio global e ampliar o volume de cliques sem aumentar o investimento total.</span>
+        </div>
+        <div class="reco-item">
+          <span class="reco-icon">📈</span>
+          <span class="reco-text"><strong>Capitalizar o engajamento orgânico alto:</strong> Com 18,30% de taxa de engajamento no Instagram, conteúdos orgânicos de alta performance (como "Família ao Pé da Cruz") devem ser impulsionados via Boost para maximizar o alcance pago a custo reduzido, aproveitando o sinal social positivo.</span>
+        </div>
+        <div class="reco-item">
+          <span class="reco-icon">🚀</span>
+          <span class="reco-text"><strong>Otimizar campanha "Pós-Evento FPC" (CPC R$ 0,22):</strong> Esta campanha apresentou o CPC mais alto do período. Revisar criativos, segmentação e posicionamento. O alto CPC pode indicar saturação de audiência — expandir público ou testar novos formatos (Reels Ads) pode reduzir o custo por resultado.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: META ADS -->
+  <div id="tab-meta-ads" class="tab-content">
+    <div class="section-grid">
+      <div class="card">
+        <h3>📊 Métricas Meta Ads — Visão Geral</h3>
+        <div class="metrics-list">
+          <div class="metric-row"><span class="metric-label">Valor Gasto</span><span class="metric-value">R$ 547,70</span></div>
+          <div class="metric-row"><span class="metric-label">Cliques (todos)</span><span class="metric-value">4.927</span></div>
+          <div class="metric-row"><span class="metric-label">CTR (todos)</span><span class="metric-value">5,06%</span></div>
+          <div class="metric-row"><span class="metric-label">CPC (todos)</span><span class="metric-value">R$ 0,11</span></div>
+          <div class="metric-row"><span class="metric-label">Alcance</span><span class="metric-value">60.613</span></div>
+          <div class="metric-row"><span class="metric-label">Impressões</span><span class="metric-value">97.443</span></div>
+          <div class="metric-row"><span class="metric-label">CPM Médio</span><span class="metric-value">R$ 5,62</span></div>
+          <div class="metric-row"><span class="metric-label">Frequência</span><span class="metric-value">1,61</span></div>
+          <div class="metric-row"><span class="metric-label">Cadastros (Formulário)</span><span class="metric-value">1</span></div>
+          <div class="metric-row"><span class="metric-label">Conversas iniciadas</span><span class="metric-value">6</span></div>
+          <div class="metric-row"><span class="metric-label">ROAS</span><span class="metric-value">N/D</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📱 Breakout por Plataforma</h3>
+        <div class="platform-split">
+          <span class="platform-pill fb">📘 Facebook</span>
+          <span class="platform-pill ig">📸 Instagram</span>
+        </div>
+        <div class="metrics-list">
+          <div class="metric-row"><span class="metric-label">Cliques Facebook</span><span class="metric-value">3.195 (64,8%)</span></div>
+          <div class="metric-row"><span class="metric-label">Cliques Instagram</span><span class="metric-value">1.732 (35,2%)</span></div>
+          <div class="metric-row"><span class="metric-label">Alcance Facebook</span><span class="metric-value">25.593</span></div>
+          <div class="metric-row"><span class="metric-label">Alcance Instagram</span><span class="metric-value">36.075</span></div>
+          <div class="metric-row"><span class="metric-label">Impressões Facebook</span><span class="metric-value">39.186</span></div>
+          <div class="metric-row"><span class="metric-label">Impressões Instagram</span><span class="metric-value">58.257</span></div>
+          <div class="metric-row"><span class="metric-label">Valor gasto Facebook</span><span class="metric-value">R$ 183,67</span></div>
+          <div class="metric-row"><span class="metric-label">Valor gasto Instagram</span><span class="metric-value">R$ 364,03</span></div>
+          <div class="metric-row"><span class="metric-label">CPC Facebook</span><span class="metric-value">R$ 0,06</span></div>
+          <div class="metric-row"><span class="metric-label">CPC Instagram</span><span class="metric-value">R$ 0,21</span></div>
+          <div class="metric-row"><span class="metric-label">CPM Facebook</span><span class="metric-value">R$ 4,69</span></div>
+          <div class="metric-row"><span class="metric-label">CPM Instagram</span><span class="metric-value">R$ 6,25</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMPAIGNS TABLE -->
+    <div class="card full">
+      <h3>🏆 Tabela de Campanhas</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Campanha</th>
+              <th>Cliques</th>
+              <th>% do Total</th>
+              <th>CPC (R$)</th>
+              <th>Alcance</th>
+              <th>CPM (R$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Lançamento Momento de Paz</td>
+              <td><strong>1.671</strong><span class="pct-bar" style="width:80px"></span></td>
+              <td>33,9%</td>
+              <td>0,13</td>
+              <td>23.168</td>
+              <td>5,68</td>
+            </tr>
+            <tr>
+              <td>Evento FPC</td>
+              <td><strong>1.266</strong><span class="pct-bar" style="width:60px"></span></td>
+              <td>25,7%</td>
+              <td>0,06</td>
+              <td>16.553</td>
+              <td>3,91</td>
+            </tr>
+            <tr>
+              <td>Família ao Pé da Cruz</td>
+              <td><strong>1.021</strong><span class="pct-bar" style="width:48px"></span></td>
+              <td>20,7%</td>
+              <td>0,05</td>
+              <td>8.260</td>
+              <td>4,47</td>
+            </tr>
+            <tr>
+              <td>Pós-Evento FPC</td>
+              <td><strong>969</strong><span class="pct-bar" style="width:46px"></span></td>
+              <td>19,7%</td>
+              <td>0,22</td>
+              <td>21.332</td>
+              <td>7,01</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TOP REGIONS -->
+    <div class="card full" style="margin-top:var(--gap)">
+      <h3>🗺️ Regiões com Maior Alcance</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Estado</th><th>Alcance</th><th>Impressões</th><th>Freq.</th><th>Valor Gasto</th><th>CPM</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>São Paulo</td><td>16.328</td><td>26.363</td><td>1,61</td><td>R$ 150,16</td><td>R$ 5,70</td></tr>
+            <tr><td>Rio de Janeiro</td><td>7.156</td><td>11.763</td><td>1,64</td><td>R$ 71,71</td><td>R$ 6,10</td></tr>
+            <tr><td>Minas Gerais</td><td>4.906</td><td>7.857</td><td>1,60</td><td>R$ 47,20</td><td>R$ 6,01</td></tr>
+            <tr><td>Bahia</td><td>4.243</td><td>7.045</td><td>1,66</td><td>R$ 40,32</td><td>R$ 5,72</td></tr>
+            <tr><td>Rio Grande do Sul</td><td>3.589</td><td>5.811</td><td>1,62</td><td>R$ 32,55</td><td>R$ 5,60</td></tr>
+            <tr><td>Ceará</td><td>2.775</td><td>4.711</td><td>1,70</td><td>R$ 24,26</td><td>R$ 5,15</td></tr>
+            <tr><td>Paraná</td><td>2.649</td><td>3.967</td><td>1,50</td><td>R$ 20,86</td><td>R$ 5,26</td></tr>
+            <tr><td>Pará</td><td>2.214</td><td>3.679</td><td>1,66</td><td>R$ 16,17</td><td>R$ 4,40</td></tr>
+            <tr><td>Pernambuco</td><td>1.917</td><td>3.402</td><td>1,77</td><td>R$ 18,93</td><td>R$ 5,56</td></tr>
+            <tr><td>Goiás</td><td>1.657</td><td>2.691</td><td>1,62</td><td>R$ 16,57</td><td>R$ 6,16</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: INSTAGRAM -->
+  <div id="tab-instagram" class="tab-content">
+    <div class="section-grid">
+      <div class="card">
+        <h3>📸 Instagram Orgânico — KPIs</h3>
+        <small style="color:var(--text-secondary);display:block;margin-bottom:12px;font-size:11px;">Período: 15/03/2026 – 13/04/2026</small>
+        <div class="metrics-list">
+          <div class="metric-row"><span class="metric-label">Seguidores Totais</span><span class="metric-value">321.477</span></div>
+          <div class="metric-row"><span class="metric-label">Novos Seguidores</span><span class="metric-value">+4.904 (↑16,57%)</span></div>
+          <div class="metric-row"><span class="metric-label">Publicações</span><span class="metric-value">53</span></div>
+          <div class="metric-row"><span class="metric-label">Alcance</span><span class="metric-value">373.853</span></div>
+          <div class="metric-row"><span class="metric-label">Visualizações</span><span class="metric-value">2.745.669</span></div>
+          <div class="metric-row"><span class="metric-label">Curtidas</span><span class="metric-value">126.395</span></div>
+          <div class="metric-row"><span class="metric-label">Comentários</span><span class="metric-value">1.633</span></div>
+          <div class="metric-row"><span class="metric-label">Compartilhamentos</span><span class="metric-value">9.102</span></div>
+          <div class="metric-row"><span class="metric-label">Pessoas Engajadas</span><span class="metric-value">68.405</span></div>
+          <div class="metric-row"><span class="metric-label">Taxa de Engajamento</span><span class="metric-value">18,30%</span></div>
+          <div class="metric-row"><span class="metric-label">Média Engaj./Post</span><span class="metric-value">2.883</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📊 Engajamento Visual</h3>
+        <div class="chart-container" style="height:280px">
+          <canvas id="chartIgEngaj"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card full" style="margin-top:var(--gap)">
+      <h3>🏆 Top Publicações por Alcance</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Publicação</th><th>Alcance</th><th>Curtidas</th><th>Coment.</th><th>Tx. Engaj.</th><th>Salvo</th><th>Compart.</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>(Sem legenda / Vídeo)</td><td>108.813</td><td>16.227</td><td>109</td><td>18,31%</td><td>457</td><td>989</td></tr>
+            <tr><td>(Sem legenda / Vídeo)</td><td>97.032</td><td>16.514</td><td>145</td><td>19,09%</td><td>237</td><td>467</td></tr>
+            <tr><td>"Se dois de vós concordarem..."</td><td>63.098</td><td>10.261</td><td>151</td><td>18,93%</td><td>211</td><td>489</td></tr>
+            <tr><td>"Cada mulher floresce de uma maneira..."</td><td>61.778</td><td>6.718</td><td>73</td><td>17,52%</td><td>290</td><td>2.696</td></tr>
+            <tr><td>(Sem legenda)</td><td>55.684</td><td>9.167</td><td>128</td><td>19,90%</td><td>262</td><td>616</td></tr>
+            <tr><td>"Família ao Pé da Cruz" (evento)</td><td>46.350</td><td>3.523</td><td>32</td><td>9,54%</td><td>88</td><td>389</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: FACEBOOK -->
+  <div id="tab-facebook" class="tab-content">
+    <div class="section-grid">
+      <div class="card">
+        <h3>📘 Facebook — Página Orgânica</h3>
+        <div class="metrics-list">
+          <div class="metric-row"><span class="metric-label">Seguidores da Página</span><span class="metric-value">99.949</span></div>
+          <div class="metric-row"><span class="metric-label">Visualizações de Página</span><span class="metric-value">1.510.496</span></div>
+          <div class="metric-row"><span class="metric-label">Visualizações Orgânicas</span><span class="metric-value">1.436.636</span></div>
+          <div class="metric-row"><span class="metric-label">Visualizações Pagas</span><span class="metric-value">39.186</span></div>
+          <div class="metric-row"><span class="metric-label">Alcance Total Pago</span><span class="metric-value">34.209</span></div>
+          <div class="metric-row"><span class="metric-label">Engajamentos nas Publicações</span><span class="metric-value">124.139</span></div>
+          <div class="metric-row"><span class="metric-label">Alcance Viral das Publicações</span><span class="metric-value">26.234</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📊 Facebook — Pago vs Orgânico</h3>
+        <div class="chart-container" style="height:260px">
+          <canvas id="chartFbPagoOrg"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card full" style="margin-top:var(--gap)">
+      <h3>📣 Facebook Ads — Métricas de Campanha (Meta)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Métrica</th><th>Facebook</th><th>Instagram</th><th>Total</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Cliques</td><td>3.195</td><td>1.732</td><td>4.927</td></tr>
+            <tr><td>Alcance</td><td>25.593</td><td>36.075</td><td>60.613</td></tr>
+            <tr><td>Impressões</td><td>39.186</td><td>58.257</td><td>97.443</td></tr>
+            <tr><td>Valor Gasto (R$)</td><td>183,67</td><td>364,03</td><td>547,70</td></tr>
+            <tr><td>CPC (R$)</td><td>0,06</td><td>0,21</td><td>0,11</td></tr>
+            <tr><td>CPM (R$)</td><td>4,69</td><td>6,25</td><td>5,62</td></tr>
+            <tr><td>Frequência</td><td>1,53</td><td>1,61</td><td>1,61</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    🔄 Atualizado automaticamente toda segunda-feira &nbsp;|&nbsp; Fonte: mLabs / relatorio.digital &nbsp;|&nbsp; Gerado em 14/04/2026
+  </footer>
+
+</div>
+
+<script>
+  // ── TAB LOGIC ──
+  function showTab(id) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // ── CHART DEFAULTS ──
+  Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
+  Chart.defaults.font.size = 12;
+  Chart.defaults.color = '#6B7280';
+
+  const ACCENT = '#7C3AED';
+  const FB_COLOR = '#1877F2';
+  const IG_COLOR = '#E1306C';
+
+  // ── DONUT: Investimento por Plataforma ──
+  new Chart(document.getElementById('chartDonut'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Facebook (R$ 183,67)', 'Instagram (R$ 364,03)'],
+      datasets: [{
+        data: [183.67, 364.03],
+        backgroundColor: [FB_COLOR, IG_COLOR],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'circle' } },
+        tooltip: { callbacks: { label: ctx => ` R$ ${ctx.parsed.toLocaleString('pt-BR', {minimumFractionDigits:2})}` } }
+      },
+      cutout: '65%'
+    }
+  });
+
+  // ── BAR: Cliques por Plataforma ──
+  new Chart(document.getElementById('chartCliquesPlat'), {
+    type: 'bar',
+    data: {
+      labels: ['Facebook', 'Instagram'],
+      datasets: [{
+        label: 'Cliques',
+        data: [3195, 1732],
+        backgroundColor: [FB_COLOR, IG_COLOR],
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#F3F4F6' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ── BAR HORIZONTAL: Campanhas ──
+  new Chart(document.getElementById('chartCampanhas'), {
+    type: 'bar',
+    data: {
+      labels: ['Lançamento Momento de Paz', 'Evento FPC', 'Família ao Pé da Cruz', 'Pós-Evento FPC'],
+      datasets: [{
+        label: 'Cliques',
+        data: [1671, 1266, 1021, 969],
+        backgroundColor: [ACCENT, '#A855F7', '#C084FC', '#DDD6FE'],
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true, grid: { color: '#F3F4F6' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ── BAR AGRUPADO: Alcance Pago vs Orgânico ──
+  new Chart(document.getElementById('chartAlcance'), {
+    type: 'bar',
+    data: {
+      labels: ['Facebook', 'Instagram'],
+      datasets: [
+        {
+          label: 'Alcance Pago',
+          data: [25593, 36075],
+          backgroundColor: [FB_COLOR + 'BB', IG_COLOR + 'BB'],
+          borderRadius: 4,
+          borderSkipped: false
+        },
+        {
+          label: 'Alcance Orgânico',
+          data: [0, 373853],
+          backgroundColor: [FB_COLOR + '44', IG_COLOR + '44'],
+          borderRadius: 4,
+          borderSkipped: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 14 } } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#F3F4F6' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ── DOUGHNUT: Instagram Engajamento breakdown ──
+  new Chart(document.getElementById('chartIgEngaj'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Curtidas (126.395)', 'Compartilhamentos (9.102)', 'Comentários (1.633)'],
+      datasets: [{
+        data: [126395, 9102, 1633],
+        backgroundColor: [IG_COLOR, '#F97316', '#FBBF24'],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 12, usePointStyle: true, pointStyle: 'circle', font: { size: 11 } } }
+      },
+      cutout: '60%'
+    }
+  });
+
+  // ── BAR: Facebook Pago vs Orgânico ──
+  new Chart(document.getElementById('chartFbPagoOrg'), {
+    type: 'bar',
+    data: {
+      labels: ['Visualizações Orgânicas', 'Visualizações Pagas', 'Alcance Pago', 'Engajamentos'],
+      datasets: [{
+        label: 'Facebook',
+        data: [1436636, 39186, 34209, 124139],
+        backgroundColor: [FB_COLOR, FB_COLOR + '88', FB_COLOR + '55', FB_COLOR + 'CC'],
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true, grid: { color: '#F3F4F6' }, ticks: { callback: v => v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v >= 1000 ? (v/1000).toFixed(0)+'k' : v } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+</script>
+</body>
+</html>
